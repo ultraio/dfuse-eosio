@@ -52,47 +52,7 @@ const StyledFont: React.ComponentType<any> = styled(FontAwesomeIcon)`
 
 const BaseFooter = () => (
   <Cell height="auto" bg={theme.colors.bleu11} mt="10px">
-    <Cell
-      maxWidth={["1800px"]}
-      px={[4]}
-      mx="auto"
-      lineHeight={[2]}
-      pt={[1]}
-      pb={[2]}
-      my={[4]}
-      width="100%"
-    >
-      
-    </Cell>
-    <Cell
-      maxWidth={["1800px"]}
-      px={[4]}
-      mx="auto"
-      lineHeight={[2]}
-      pt={[1]}
-      pb={[2]}
-      my={[4]}
-      width="100%"
-      textAlign="center"
-    >
-      <a
-        href={`https://dfuse.io/${getCurrentLanguageValue()}`}
-        title="The dfuse Blockchain Data Platform"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <img
-          src={`/images/built-with-dfuse${getCurrentLanguageValue() === "zh" ? "-CN" : ""}-01.png`}
-          title="The dfuse Blockchain Data Platform"
-          alt="built-with-dfuse"
-          width="210"
-          height="auto"
-        />
-        <Text color={theme.colors.bleu6} fontSize={[1]}>
-          {t("footer.aboutDfuse")}
-        </Text>
-      </a>
-    </Cell>
+    
     <Cell p={[3]} mt={[3]} borderTop={`1px solid ${theme.colors.bleu10}`} textAlign="center">
       <Text color={theme.colors.primary} fontSize={[1]}>
         {t("footer.copyright", { year: new Date().getFullYear() })}

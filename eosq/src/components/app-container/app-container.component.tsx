@@ -75,7 +75,7 @@ const HeaderWrapper: React.ComponentType<any> = styled(Cell)`
   width: 100%;
   top: 0px;
 
-  background: #2F2C36; /* Old browsers */
+  background: #7650C7; /* Old browsers */
 `
 
 const PageWrapper: React.ComponentType<any> = styled.div`
