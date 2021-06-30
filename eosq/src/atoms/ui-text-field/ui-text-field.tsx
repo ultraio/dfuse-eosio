@@ -45,7 +45,7 @@ export const UiSearch: React.ComponentType<any> = styled(Input)`
 
   &:hover,
   &:focus {
-    background-color: #7a85ff !important;
+    background-color: #3C3743 !important;
   }
 
   input::placeholder {

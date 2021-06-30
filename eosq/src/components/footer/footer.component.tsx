@@ -62,26 +62,7 @@ const BaseFooter = () => (
       my={[4]}
       width="100%"
     >
-      <Grid height="auto" gridTemplateColumns={["1fr", "1fr 1fr"]} alignItems="left">
-        <Cell pt={[4]} justifySelf="left" textAlign="left" alignSelf="left">
-          <LogoLink pt={[3]} to={Links.home()}>
-            <LogoFirst px={[0]} fontSize={[6, 6, 6]}>
-              eos
-            </LogoFirst>
-            <LogoSecond px={[0]} fontSize={[6, 6, 6]}>
-              q
-            </LogoSecond>
-          </LogoLink>
-        </Cell>
-        <Cell justifySelf="right" textAlign="right" alignSelf="right" pt={[4]}>
-          <ExternalTextLink to="https://t.me/dfuseAPI">
-            <StyledText pr={[2]} display="inline-block" color={theme.colors.bleu6}>
-              {t("footer.telegram")}
-            </StyledText>
-            <StyledFont color={theme.colors.bleu6} icon={faTelegramPlane} size="lg" />
-          </ExternalTextLink>
-        </Cell>
-      </Grid>
+      
     </Cell>
     <Cell
       maxWidth={["1800px"]}
