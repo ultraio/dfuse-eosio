@@ -6,7 +6,7 @@ ARG EOSIO_TAG
 ARG DEB_PKG
 RUN apt update && apt-get -y install curl ca-certificates libicu60 libusb-1.0-0 libcurl3-gnutls
 RUN mkdir -p /var/cache/apt/archives/
-RUN curl -sL -o/var/cache/apt/archives/eosio.deb "https://github-releases.githubusercontent.com/156853671/ef04142a-3123-46a8-8749-6581ae28437d?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20210817%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210817T125724Z&X-Amz-Expires=300&X-Amz-Signature=ab25f0a9072c8582f874a6cd19ce8ee81d1e1aa8e7fc8580ad713281867c3a27&X-Amz-SignedHeaders=host&actor_id=57535158&key_id=0&repo_id=156853671&response-content-disposition=attachment%3B%20filename%3Deosio-2.0.9-1.13.0-dm.deb&response-content-type=application%2Foctet-stream"
+RUN mv /tmp/eosio-${EOSIO_TAG}.deb /var/cache/apt/archives/eosio.deb
 RUN dpkg -i /var/cache/apt/archives/eosio.deb
 RUN rm -rf /var/cache/apt/*
 
