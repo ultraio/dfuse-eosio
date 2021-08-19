@@ -20,7 +20,7 @@ jobs:
           repository: ultraio/eosio
           tag: '2.0.9-1.13.0-dm'
           path: /tmp/
-          file:  eosio-${{ env.2.0.9-1.13.0-dm }}.deb
+          file:  eosio-2.0.9-1.13.0-dm.deb
           token: '${{ secrets.DEVOPS_SECRET }}'
 
     - name: Branch name
