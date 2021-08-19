@@ -6,7 +6,7 @@ ARG EOSIO_TAG
 ARG DEB_PKG
 RUN apt update && apt-get -y install curl ca-certificates libicu60 libusb-1.0-0 libcurl3-gnutls
 RUN mkdir -p /var/cache/apt/archives/
-RUN mv /tmp/eosio-${EOSIO_TAG}.deb /var/cache/apt/archives/eosio.deb
+RUN mv /tmp/${DEB_PKG} /var/cache/apt/archives/eosio.deb
 RUN dpkg -i /var/cache/apt/archives/eosio.deb
 RUN rm -rf /var/cache/apt/*
 
