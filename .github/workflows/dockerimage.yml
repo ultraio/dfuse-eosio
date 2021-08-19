@@ -3,7 +3,7 @@ name: Docker Image CI
 on:
   push:
     branches:
-      - build/docker
+      - task/UI-1062
   create:
     tags:
       - v*
@@ -14,21 +14,27 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Download DM patch
+        uses: Legion2/download-release-action@v2.1.0
+        with:
+          repository: ultraio/eosio
+          tag: '2.0.9-1.13.0-dm'
+          path: /tmp/
+          file:  eosio-${{ env.2.0.9-1.13.0-dm }}.deb
+          token: '${{ secrets.DEVOPS_SECRET }}'
+
     - name: Branch name
       id: branch_name
       run: |
         echo ::set-output name=VERSION::$([[ $GITHUB_REF =~ "refs/tags" ]] && echo ${GITHUB_REF#refs/tags/} || echo "${GITHUB_SHA:0:7}")
-
     - name: Build the Docker image
       run: |
-        echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u USERNAME --password-stdin
+        docker build . -t ultraio/dfuse-eosio/dfuse-eosio:latest -t ultraio/dfuse-eosio/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
+        # docker push       ultraio/dfuse-eosio/dfuse-eosio:latest
+        # echo ${{ secrets.docker_hub_token }} | docker login -u ${{ secrets.docker_hub_username }} --password-stdin
+        # docker image tag ultraio/dfuse-eosio/dfuse-eosio:latest dfuse/dfuse-eosio:latest
+        # docker image tag ultraio/dfuse-eosio/dfuse-eosio:latest dfuse/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
+        # docker push      dfuse/dfuse-eosio:latest
+        # docker push      dfuse/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
 
-        docker build . -t docker.pkg.github.com/dfuse-io/dfuse-eosio/dfuse-eosio:latest -t docker.pkg.github.com/dfuse-io/dfuse-eosio/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
-        docker push       docker.pkg.github.com/dfuse-io/dfuse-eosio/dfuse-eosio:latest
 
-        echo ${{ secrets.docker_hub_token }} | docker login -u ${{ secrets.docker_hub_username }} --password-stdin
-        docker image tag docker.pkg.github.com/dfuse-io/dfuse-eosio/dfuse-eosio:latest dfuse/dfuse-eosio:latest
-        docker image tag docker.pkg.github.com/dfuse-io/dfuse-eosio/dfuse-eosio:latest dfuse/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
-
-        docker push      dfuse/dfuse-eosio:latest
-        docker push      dfuse/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
