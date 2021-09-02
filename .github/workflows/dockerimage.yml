@@ -3,7 +3,7 @@ name: Docker Image CI
 on:
   push:
     branches:
-      - task/UI-1062
+      - develop
   create:
     tags:
       - v*
