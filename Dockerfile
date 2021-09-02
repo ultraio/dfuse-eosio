@@ -8,6 +8,7 @@ RUN apt update && apt-get -y install curl ca-certificates libicu60 libusb-1.0-0 
 RUN mkdir -p /var/cache/apt/archives/
 ADD ${DEB_PKG} /var/cache/apt/archives/
 RUN dpkg -i /var/cache/apt/archives/${DEB_PKG}
+
 RUN rm -rf /var/cache/apt/*
 
 FROM node:12 AS dlauncher
@@ -46,4 +47,7 @@ RUN mkdir -p /app/ && curl -Lo /app/grpc_health_probe https://github.com/grpc-ec
 COPY --from=dfuse /work/build/dfuseeos /app/dfuseeos
 COPY --from=dfuse /work/tools/manageos/motd /etc/motd
 COPY --from=dfuse /work/tools/manageos/scripts /usr/local/bin/
+RUN curl https://cmake.org/files/v3.13/cmake-3.13.4-Linux-x86_64.tar.gz | tar --strip-components=1 -xz -C /usr/local
+
+RUN apt-get update && apt install -y librdkafka-dev
 RUN echo cat /etc/motd >> /root/.bashrc
