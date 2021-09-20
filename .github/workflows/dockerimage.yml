@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - ops/UI-1062
   create:
     tags:
       - v*
@@ -16,6 +17,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+    - name: Download DM patch
+      uses: Legion2/download-release-action@v2.1.0
+      with:
+        repository: ultraio/eosio
+        tag: '2.0.9-1.13.0-dm'
+        path: .
+        file:  eosio-2.0.9-1.13.0-dm.deb
+        token: '${{ secrets.DEVOPS_SECRET }}'
 
       - name: Get branch name
         id: branch_name
@@ -31,7 +41,7 @@ jobs:
 
       - name: Build Image
         run: |-
-          docker build . -t eu.gcr.io/dfuse-302310/dfuse-eosio:latest -t eu.gcr.io/dfuse-302310/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
+          docker build . -t eu.gcr.io/dfuse-302310/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
 
       - name: Docker config
         run: |
@@ -41,4 +51,4 @@ jobs:
       - name: Push Image
         run: |-
           docker push eu.gcr.io/dfuse-302310/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
-          docker push eu.gcr.io/dfuse-302310/dfuse-eosio:latest
+          #docker push eu.gcr.io/dfuse-302310/dfuse-eosio:latest
