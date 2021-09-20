@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - develop
-      - ops/UI-1062
   create:
     tags:
       - v*
@@ -51,4 +50,4 @@ jobs:
       - name: Push Image
         run: |-
           docker push eu.gcr.io/dfuse-302310/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
-          #docker push eu.gcr.io/dfuse-302310/dfuse-eosio:latest
+          docker push eu.gcr.io/dfuse-302310/dfuse-eosio:latest
