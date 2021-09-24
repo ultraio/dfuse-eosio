@@ -10,9 +10,12 @@ on:
 
 jobs:
   build:
+    name: Build and Push image
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
     - name: Download DM patch
       uses: Legion2/download-release-action@v2.1.0
@@ -23,18 +26,28 @@ jobs:
         file:  eosio-2.0.9-1.13.0-dm.deb
         token: '${{ secrets.DEVOPS_SECRET }}'
 
-    - name: Branch name
-      id: branch_name
-      run: |
-        echo ::set-output name=VERSION::$([[ $GITHUB_REF =~ "refs/tags" ]] && echo ${GITHUB_REF#refs/tags/} || echo "${GITHUB_SHA:0:7}")
-    - name: Build the Docker image
-      run: |
-        docker build . -t ultraio/dfuse-eosio:latest -t ultrai/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
-        # docker push       ultraio/dfuse-eosio:latest
-        # echo ${{ secrets.docker_hub_token }} | docker login -u ${{ secrets.docker_hub_username }} --password-stdin
-        # docker image tag ultraio/dfuse-eosio:latest ultraio/dfuse-eosio:latest
-        # docker image tag ultraio/dfuse-eosio:latest ultraio/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
-        # docker push      ultraio/dfuse-eosio:latest
-        # docker push      ultraio/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
+      - name: Get branch name
+        id: branch_name
+        run: |
+          echo ::set-output name=VERSION::$([[ $GITHUB_REF =~ "refs/tags" ]] && echo ${GITHUB_REF#refs/tags/} || echo "${GITHUB_SHA:0:7}")
 
+      - name: Setup gcloud cli
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCR_KEY }}
+          project_id: dfuse-302310
+          export_default_credentials: true
 
+      - name: Build Image
+        run: |-
+          docker build . -t eu.gcr.io/dfuse-302310/dfuse-eosio:latest -t eu.gcr.io/dfuse-302310/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
+
+      - name: Docker config
+        run: |
+          gcloud auth configure-docker -q
+
+      # Push image to Google Container Registry
+      - name: Push Image
+        run: |-
+          docker push eu.gcr.io/dfuse-302310/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
+          docker push eu.gcr.io/dfuse-302310/dfuse-eosio:latest
