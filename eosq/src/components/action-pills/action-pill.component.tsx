@@ -1,6 +1,6 @@
 import * as React from "react"
 import { getHeaderAndTitle } from "../../helpers/action.helpers"
-import { ActionTrace, Action, DbOp, RAMOp, TableOp } from "@dfuse/client"
+import { ActionTrace, Action, DbOp, RAMOp, TableOp, KvOp } from "@dfuse/client"
 import { PageContext } from "../../models/core"
 import { templateStore } from "../../stores"
 import { TraceInfo } from "../../models/pill-templates"
@@ -10,16 +10,18 @@ interface Props {
   disabled?: boolean
   ramops?: RAMOp[]
   dbops?: DbOp[]
+  kvops?: KvOp[]
   pageContext?: PageContext
 }
 
-export const ActionPill: React.SFC<Props> = ({ action, disabled, pageContext, ramops, dbops }) => {
+export const ActionPill: React.SFC<Props> = ({ action, disabled, pageContext, ramops, dbops, kvops }) => {
   const headerParams = getHeaderAndTitle(action, action.account)
   const ConcreteComponent = templateStore.getComponent(action)
 
   return (
     <ConcreteComponent
       dbops={dbops}
+      kvops={kvops}
       ramops={ramops}
       pageContext={pageContext}
       disabled={disabled}
@@ -34,6 +36,7 @@ interface TraceProps {
   disabled?: boolean
   ramops?: RAMOp[]
   dbops?: DbOp[]
+  kvops?: KvOp[]
   tableops?: TableOp[]
   pageContext?: PageContext
   highlighted?: boolean
@@ -42,6 +45,7 @@ interface TraceProps {
 export const ActionTracePill: React.SFC<TraceProps> = ({
   ramops,
   dbops,
+  kvops,
   tableops,
   actionTrace,
   disabled,
@@ -64,6 +68,7 @@ export const ActionTracePill: React.SFC<TraceProps> = ({
       ramops={ramops}
       pageContext={pageContext}
       dbops={dbops}
+      kvops={kvops}
       tableops={tableops}
       disabled={disabled}
       action={action}

@@ -470,6 +470,7 @@ func (a *App) Run() error {
 	statedbRestRouter.Path("/v0/state/table_scopes").Handler(statedbProxy)
 	statedbRestRouter.Path("/v0/state/tables/accounts").Handler(statedbProxy)
 	statedbRestRouter.Path("/v0/state/tables/scopes").Handler(statedbProxy)
+	statedbRestRouter.Path("/v0/state/abi/kv_to_json").Handler(statedbProxy)
 
 	historyRestRouter.Use(compressionMiddleware)
 	historyRestRouter.Use(eosws.RESTTrackingMiddleware)

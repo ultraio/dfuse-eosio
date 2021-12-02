@@ -177,6 +177,7 @@ export class GenericPillComponent
         tableops={this.props.tableops}
         traceInfo={this.props.traceInfo}
         dbops={this.props.dbops}
+        kvops={this.props.kvops}
         data={this.state.fullContent ? this.jsonData : this.croppedData}
         displayFullContentButton={displayFullContentButton}
         console={this.props.console}

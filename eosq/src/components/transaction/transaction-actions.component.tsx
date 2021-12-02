@@ -5,7 +5,7 @@ import { DeferredOperation } from "../../models/transaction"
 import { DataEmpty } from "@dfuse/explorer"
 import { Cell } from "../../atoms/ui-grid/ui-grid.component"
 import { ListActions } from "./list-actions.component"
-import { RAMOp, ActionTrace, DbOp, CreationNode, TableOp, Action } from "@dfuse/client"
+import { RAMOp, ActionTrace, DbOp, CreationNode, TableOp, Action, KvOp } from "@dfuse/client"
 import { PageContext } from "../../models/core"
 import { ListActionTraces } from "./list-action-traces.component"
 import { Text } from "../../atoms/text/text.component"
@@ -31,6 +31,7 @@ interface Props {
   deferredOperations?: DeferredOperation[]
   ramops?: RAMOp[]
   dbops?: DbOp[]
+  kvops?: KvOp[]
   pageContext?: PageContext
   actionIndexes?: number[]
   creationTree?: CreationNode[]
@@ -62,6 +63,7 @@ export class TransactionActions extends React.Component<Props, State> {
           <ListActions
             ramops={this.props.ramops}
             dbops={this.props.dbops}
+            kvops={this.props.kvops}
             actions={actions}
             deferredOperations={this.props.deferredOperations}
             actionIndexes={this.props.actionIndexes}
@@ -79,6 +81,7 @@ export class TransactionActions extends React.Component<Props, State> {
             displayCreationTrace={this.state.displayCreationTrace}
             collapsed={false}
             dbops={this.props.dbops}
+            kvops={this.props.kvops}
             ramops={this.props.ramops}
             tableops={this.props.tableops}
             actionTraces={actionTraces}

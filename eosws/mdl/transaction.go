@@ -15,6 +15,7 @@
 package mdl
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -80,6 +81,7 @@ func ToV1TransactionLifecycle(in *pbcodec.TransactionLifecycle) (*v1.Transaction
 		out.RAMOps = ToV1RAMOps(in.ExecutionTrace.RamOps)
 		out.TableOps = ToV1TableOps(in.ExecutionTrace.TableOps)
 		out.DTrxOps, err = ToV1DTrxOps(in.ExecutionTrace.DtrxOps)
+		out.KVOps = ToV1KVOps(in.ExecutionTrace.KvOps)
 		if err != nil {
 			return nil, fmt.Errorf("transaction lifecycle: %w", err)
 		}
@@ -476,6 +478,34 @@ func ToV1ActionReceipt(receiver string, in *pbcodec.ActionReceipt) v1.ActionRece
 		ABISequence:    eos.Uint64(in.AbiSequence),
 	}
 	return out
+}
+
+func ToV1KVOps(in []*pbcodec.KVOp) (out []*v1.KVOp) {
+	for _, inOp := range in {
+		out = append(out, ToV1KVOp(inOp))
+	}
+	return out
+}
+
+func ToV1KVOp(in *pbcodec.KVOp) *v1.KVOp {
+	out := &v1.KVOp{
+		Op:          in.LegacyOperation(),
+		ActionIndex: int(in.ActionIndex),
+		Account:     in.Code,
+		Key:         hex.EncodeToString(in.Key),
+		New:         ToV1KVRow(in.NewData, in.NewPayer),
+		Old:         ToV1KVRow(in.OldData, in.OldPayer),
+	}
+	return out
+
+}
+
+func ToV1KVRow(data []byte, payer string) *v1.KVRow {
+	row := &v1.KVRow{
+		Payer: payer,
+		Hex:   hex.EncodeToString(data),
+	}
+	return row
 }
 
 type ExtendedStack struct {

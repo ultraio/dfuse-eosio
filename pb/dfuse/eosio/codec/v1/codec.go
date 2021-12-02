@@ -463,3 +463,17 @@ func (r *RlimitOp) IsLocalKind() bool {
 func (l *PermissionLevel) Authorization() string {
 	return l.Actor + "@" + l.Permission
 }
+
+func (op *KVOp) LegacyOperation() string {
+	switch op.Operation {
+	case KVOp_OPERATION_INSERT:
+		return "INS"
+	case KVOp_OPERATION_UPDATE:
+		return "UPD"
+	case KVOp_OPERATION_REMOVE:
+		return "REM"
+	}
+
+	// Impossible to reach, we cover all options above
+	return ""
+}

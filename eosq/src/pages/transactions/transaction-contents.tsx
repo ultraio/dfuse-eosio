@@ -39,6 +39,7 @@ export class TransactionContents extends React.Component<Props, State> {
         <Cell minHeight="250px">
           <TransactionActions
             dbops={this.props.lifecycleWrap.lifecycle.dbops || []}
+            kvops={this.props.lifecycleWrap.lifecycle.kvops || []}
             ramops={this.props.lifecycleWrap.lifecycle.ramops || []}
             actionTraces={this.props.lifecycleWrap.actionTraces}
             tableops={this.props.lifecycleWrap.lifecycle.tableops}

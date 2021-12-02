@@ -78,6 +78,8 @@ func New(addr string, db *fluxdb.FluxDB) *EOSServer {
 	coreRouter.Methods("GET", "POST").Path("/v0/state/tables/accounts").HandlerFunc(srv.listTablesRowsForAccountsHandler)
 	coreRouter.Methods("GET", "POST").Path("/v0/state/tables/scopes").HandlerFunc(srv.listTablesRowsForScopesHandler)
 
+	coreRouter.Methods("POST").Path("/v0/state/abi/kv_to_json").HandlerFunc(srv.decodeKVHandler)
+
 	db.OnTerminating(func(_ error) {
 		zlog.Info("gracefully shutting down http server, draining connections")
 		if srv.httpServer != nil {

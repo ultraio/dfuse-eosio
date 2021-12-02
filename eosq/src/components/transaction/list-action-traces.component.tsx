@@ -5,7 +5,7 @@ import { Cell, Grid } from "../../atoms/ui-grid/ui-grid.component"
 import { DeferredLink } from "../deferred-link/deferred-link"
 import moment from "moment"
 import { secondsToTime } from "@dfuse/explorer"
-import { ActionTrace, DbOp, RAMOp, CreationNode, TableOp } from "@dfuse/client"
+import { ActionTrace, DbOp, RAMOp, CreationNode, TableOp, KvOp } from "@dfuse/client"
 import { PageContext } from "../../models/core"
 import { TransactionTracesWrap } from "../../services/transaction-traces-wrap"
 
@@ -15,6 +15,7 @@ interface Props {
   deferredOperations?: DeferredOperation[]
   ramops?: RAMOp[]
   dbops?: DbOp[]
+  kvops?: KvOp[]
   pageContext?: PageContext
   actionIndexes?: number[]
   collapsed?: boolean
@@ -44,6 +45,10 @@ export class ListActionTraces extends React.Component<Props, any> {
       (dbop: DbOp) => dbop.action_idx === traceLevel.index
     )
 
+    const kvops = (this.props.kvops || []).filter(
+      (kvop: KvOp) => kvop.action_idx === traceLevel.index
+    )
+
     const tableops = (this.props.tableops || []).filter(
       (tableop: TableOp) => tableop.action_idx === traceLevel.index
     )
@@ -54,6 +59,7 @@ export class ListActionTraces extends React.Component<Props, any> {
           <ActionTracePill
             highlighted={this.computeHighlighted(traceLevel)}
             dbops={dbops}
+            kvops={kvops}
             ramops={ramops}
             tableops={tableops}
             actionTrace={traceLevel.actionTrace}

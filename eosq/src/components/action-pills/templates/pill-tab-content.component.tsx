@@ -9,12 +9,14 @@ import { theme, styled } from "../../../theme"
 import { RamUsage } from "../../ram-usage/ram-usage.component"
 import { DBOperations } from "../../db-operations/db-operations.component"
 import * as React from "react"
-import { DbOp, RAMOp, TableOp, Action, Authorization } from "@dfuse/client"
+import { DbOp, RAMOp, TableOp, Action, Authorization, KvOp } from "@dfuse/client"
 import { MonospaceTextLink } from "../../../atoms/text-elements/misc"
 import { Links } from "../../../routes"
 import { VerticalTabs } from "../../../atoms/vertical-tabs/vertical-tabs"
 import { decodeDBOps } from "../../../services/dbops"
 import { TraceInfo } from "../../../models/pill-templates"
+import { KVOperations } from "../../kv-operation/kv-operations.component"
+import { decodeKVOps } from "../../../services/kvops"
 
 const ContentWrapper: React.ComponentType<any> = styled(Cell)`
   padding: 24px 24px 24px 40px;
@@ -35,12 +37,14 @@ export const PILL_TAB_VALUES = {
   GENERAL: "general",
   CONSOLE: "console",
   JSON_DATA: "jsonData",
-  HEX_DATA: "hexData"
+  HEX_DATA: "hexData",
+  KVOPS: "kvops"
 }
 
 export interface Props {
   console?: string
   dbops?: DbOp[]
+  kvops?: KvOp[]
   ramops?: RAMOp[]
   tableops?: TableOp[]
   action: Action<any>
@@ -55,6 +59,8 @@ interface State {
   currentTab: string
   decodedDBOps: DbOp[]
   isDecodedDBOps: boolean
+  isDecodedKVOps: boolean
+  decodedKVOps: KvOp[]
 }
 
 export class PillTabContentComponent extends React.Component<Props, State> {
@@ -66,7 +72,9 @@ export class PillTabContentComponent extends React.Component<Props, State> {
     this.state = {
       currentTab: PILL_TAB_VALUES.GENERAL,
       isDecodedDBOps: false,
-      decodedDBOps: []
+      decodedDBOps: [],
+      isDecodedKVOps: false,
+      decodedKVOps: []
     }
   }
 
@@ -86,6 +94,22 @@ export class PillTabContentComponent extends React.Component<Props, State> {
     return !this.state.isDecodedDBOps && this.props.dbops
   }
 
+  get displayedKVOps(): KvOp[] {
+    if (this.state.decodedKVOps.length > 0) {
+      return this.state.decodedKVOps
+    }
+
+    if (this.props.kvops) {
+      return this.props.kvops
+    }
+
+    return []
+  }
+
+  hasKVOpsToDecode() {
+    return !this.state.isDecodedKVOps && this.props.kvops
+  }
+
   onChangeContent = (currentTab: string) => {
     this.setState({ currentTab }, () => {
       if (
@@ -93,11 +117,28 @@ export class PillTabContentComponent extends React.Component<Props, State> {
         this.hasDBOpsToDecode() &&
         this.props.blockNum
       ) {
+        console.log("DB")
+        console.log(this.props.dbops)
         decodeDBOps(this.props.dbops!, this.props.blockNum, (decodedDBOps: DbOp[]) => {
           this.setState((prevState) => ({
             currentTab: prevState.currentTab,
             decodedDBOps,
             isDecodedDBOps: true
+          }))
+        })
+      }
+      if (
+        this.state.currentTab === PILL_TAB_VALUES.KVOPS &&
+        this.hasKVOpsToDecode() &&
+        this.props.blockNum
+      ) {
+        console.log("KV")
+        console.log(this.props.kvops)
+        decodeKVOps(this.props.kvops!, this.props.blockNum, (decodedKVOps: KvOp[]) => {
+          this.setState((prevState) => ({
+            currentTab: prevState.currentTab,
+            decodedKVOps,
+            isDecodedKVOps: true
           }))
         })
       }
@@ -232,6 +273,14 @@ export class PillTabContentComponent extends React.Component<Props, State> {
       )
     }
 
+    if (this.state.currentTab === PILL_TAB_VALUES.KVOPS) {
+      return (
+        <ContentWrapper>
+          <KVOperations kvops={this.displayedKVOps || []} />
+        </ContentWrapper>
+      )
+    }
+
     return null
   }
 
@@ -254,6 +303,10 @@ export class PillTabContentComponent extends React.Component<Props, State> {
 
     if (this.props.console && this.props.console.length > 0) {
       tabs.push({ label: t("transaction.pill.console"), value: PILL_TAB_VALUES.CONSOLE })
+    }
+
+    if ((this.props.kvops && this.props.kvops.length > 0)) {
+      tabs.push({ label: t("transaction.pill.kvOps"), value: PILL_TAB_VALUES.KVOPS })
     }
 
     return [

@@ -137,6 +137,7 @@ export class ListTransactionsRow extends React.Component<Props, State> {
         actionTraces={actionTraces}
         actionIndexes={transactionInfo.actionIndexes || []}
         dbops={transactionInfo.dbops}
+        kvops={transactionInfo.kvops}
         ramops={transactionInfo.ramops}
         tableops={transactionInfo.tableops}
       />

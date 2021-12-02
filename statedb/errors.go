@@ -78,3 +78,9 @@ func DataRowNotFoundError(ctx context.Context, account eos.AccountName, table eo
 		"primary_key", primaryKey,
 	)
 }
+
+func DataKVDecodingError(ctx context.Context, account string) *derr.ErrorResponse {
+	return derr.HTTPBadRequestError(ctx, nil, derr.C("KV_decoding_table_error"), "Unable to decode KV against any table in ABI.",
+		"account", account,
+	)
+}

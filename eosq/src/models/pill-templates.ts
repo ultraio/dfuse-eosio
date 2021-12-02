@@ -1,9 +1,10 @@
-import { ActionTrace, Action, DbOp, RAMOp, TableOp } from "@dfuse/client"
+import { ActionTrace, Action, DbOp, RAMOp, TableOp, KvOp } from "@dfuse/client"
 import { PageContext } from "./core"
 
 export interface GenericPillParams {
   console?: string
   dbops?: DbOp[]
+  kvops?: KvOp[]
   ramops?: RAMOp[]
   tableops?: TableOp[]
   action: Action<any>

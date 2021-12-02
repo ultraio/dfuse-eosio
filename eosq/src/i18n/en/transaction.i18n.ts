@@ -24,6 +24,15 @@ export default {
       label:
         "<0>{{operation}}</0> | table:<1>{{table}}</1> | scope:<2>{{scope}}</2> | primary key: <3>{{primaryKey}}</3>:"
     },
+    kvops: {
+      operations: {
+        INS: "INSERT ROW",
+        UPD: "UPDATE ROW",
+        REM: "REMOVE ROW"
+      },
+      label:
+        "<0>{{operation}}</0> | table:<1>{{table}}</1> | scope:<2>{{scope}}</2> | primary key: <3>{{primaryKey}}</3>:"
+    },
     ramUsage: {
       operations: {
         create_table: "creating table",
@@ -108,7 +117,8 @@ export default {
       memo: "Memo:",
       account: "Contract account",
       action_name: "Action name",
-      authorization: "Authorization"
+      authorization: "Authorization",
+      kvOps: "KV Operations"
     },
     loading: "Loading transaction",
     traces: {

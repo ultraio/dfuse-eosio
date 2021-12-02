@@ -44,6 +44,7 @@ export function transactionSearchResultsToTransactionInfo(
       actionIndexes: result.action_idx,
       dtrxops: result.lifecycle.dtrxops,
       dbops: result.lifecycle.dbops,
+      kvops: result.lifecycle.kvops,
       ramops: result.lifecycle.ramops,
       actions: lifecycleWrap.actions,
       tableops: lifecycleWrap.lifecycle.tableops
@@ -68,6 +69,7 @@ export function transactionLifecyclesToTransactionInfo(
       dtrxops: lifecycleWrap.lifecycle.dtrxops,
       actions: lifecycleWrap.actions,
       dbops: lifecycleWrap.lifecycle.dbops,
+      kvops: lifecycleWrap.lifecycle.kvops,
       ramops: lifecycleWrap.lifecycle.ramops,
       tableops: lifecycleWrap.lifecycle.tableops
     }

@@ -17,7 +17,7 @@ import { formatDateFromString } from "../../helpers/moment.helpers"
 import { Cell } from "../../atoms/ui-grid/ui-grid.component"
 import { BlockInfoBox } from "../block-info-box/block-info-box.component"
 import { PageContext } from "../../models/core"
-import { ActionTrace, Action, DTrxOp, DbOp, RAMOp, TableOp } from "@dfuse/client"
+import { ActionTrace, Action, DTrxOp, DbOp, RAMOp, TableOp, KvOp } from "@dfuse/client"
 import { ListTransactionsRow } from "./list-transactions-row.component"
 
 export interface TransactionListInfo {
@@ -33,6 +33,7 @@ export interface TransactionListInfo {
   expandAll?: boolean
   dtrxops?: DTrxOp[]
   dbops?: DbOp[]
+  kvops?: KvOp[]
   ramops?: RAMOp[]
   tableops?: TableOp[]
 }

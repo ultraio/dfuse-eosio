@@ -24,6 +24,15 @@ export default {
       label:
         "<0>{{operation}}</0> | table:<1>{{table}}</1> | scope:<2>{{scope}}</2> | primary key: <3>{{primaryKey}}</3>:"
     },
+    kvops: {
+      operations: {
+        INS: "创建 ROW",
+        UPD: "更新 ROW",
+        REM: "移除 ROW"
+      },
+      label:
+        "<0>{{operation}}</0> | table:<1>{{table}}</1> | scope:<2>{{scope}}</2> | primary key: <3>{{primaryKey}}</3>:"
+    },
     ramUsage: {
       operations: {
         create_table: "创建 table",
@@ -102,7 +111,8 @@ export default {
       memo: "备注：",
       account: "合约账户",
       action_name: "操作名称",
-      authorization: "授权权限"
+      authorization: "授权权限",
+      kvOps: "KV/数据库行为"
     },
     loading: "交易读取中",
     traces: {

@@ -3,13 +3,14 @@ import { DeferredOperation } from "../../models/transaction"
 import { ActionPill } from "../action-pills/action-pill.component"
 import { Cell } from "../../atoms/ui-grid/ui-grid.component"
 import { DeferredLink } from "../deferred-link/deferred-link"
-import { DbOp, RAMOp, Action } from "@dfuse/client"
+import { DbOp, RAMOp, Action, KvOp } from "@dfuse/client"
 
 interface Props {
   actions: Action<any>[]
   deferredOperations?: DeferredOperation[]
   ramops?: RAMOp[]
   dbops?: DbOp[]
+  kvops?: KvOp[]
   actionIndexes?: number[]
 }
 
@@ -28,10 +29,12 @@ export class ListActions extends React.Component<Props> {
     )
     const dbops = (this.props.dbops || []).filter((dbop: DbOp) => dbop.action_idx === index)
 
+    const kvops = (this.props.kvops || []).filter((kvop: KvOp) => kvop.action_idx === index)
+
     return (
       <Cell key={index}>
         <Cell>
-          <ActionPill ramops={ramops} action={action} dbops={dbops} />
+          <ActionPill ramops={ramops} action={action} dbops={dbops} kvops={kvops} />
         </Cell>
         <Cell pl="25px">
           {operations.map((operation: DeferredOperation, idx: number) => {
