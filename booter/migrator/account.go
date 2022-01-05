@@ -80,9 +80,9 @@ func (a *Account) migrateTable(table string, sendAction sendActionFunc, endTrans
 	walkScopes(a.tablePath(table), func(scope string) error {
 		tableScope, err := a.readTableScope(table, scope)
 		if err != nil {
-			//ultra-duncan --- UB-1517 Investigate some nft tables are not injected in data migration
+			//ultra-duncan --- UB-1517 fix empty scope import
 			//In case of scope is an empty string, it will assume the scope will be same as table name
-			//So if this case fail, will assume scope is empty and do an additional check check
+			//So if this case fail, will assume scope is empty and do an additional read
 			if table == scope {
 				scope = ""
 				tableScope, err = a.readTableScope(table, scope)
