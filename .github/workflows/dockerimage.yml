@@ -30,7 +30,6 @@ jobs:
         id: branch_name
         run: |
           echo ::set-output name=VERSION::$([[ $GITHUB_REF =~ "refs/tags" ]] && echo ${GITHUB_REF#refs/tags/} || echo "${GITHUB_SHA:0:7}")
-
       - name: Setup gcloud cli
         uses: google-github-actions/setup-gcloud@master
         with:
@@ -41,11 +40,9 @@ jobs:
       - name: Build Image
         run: |-
           docker build . -t eu.gcr.io/dfuse-302310/dfuse-eosio:latest -t eu.gcr.io/dfuse-302310/dfuse-eosio:${{ steps.branch_name.outputs.VERSION }}
-
       - name: Docker config
         run: |
           gcloud auth configure-docker -q
-
       # Push image to Google Container Registry
       - name: Push Image
         run: |-
