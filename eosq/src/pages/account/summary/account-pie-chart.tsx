@@ -78,15 +78,8 @@ export class AccountPieChart extends React.Component<Props, State> {
     }).then((output: any) => {
       output = output as { more: boolean; rows: StakeDetail[] }
       this.setState({
-//  UB-1438 Account fails to display after delegatebw call
-//        stakeDetails: output && output.rows ? output.rows.map((row: any) => row.json) : [],
-        stakeDetails: output && output.rows ? output.rows.map((row: any) => {
-            let detail = row.json
-            detail.cpu_weight = detail.power_weight
-            detail.net_weight = detail.power_weight
-            return detail
-        }) : [],
-        stakeLoaded: true
+        stakeDetails: output && output.rows ? output.rows.map((row: any) => row.json) : [],
+        stakeLoaded: true,
       })
     })
   }
