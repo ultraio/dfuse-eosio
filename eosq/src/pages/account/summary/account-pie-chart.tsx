@@ -190,11 +190,15 @@ export class AccountPieChart extends React.Component<Props, State> {
     let query = ""
     const accountName = this.props.account.account_name
     switch (type) {
-      case "cpu":
-        contents = this.renderTooltipWrapper(value, this.renderToolTip(accountResources, type))
-        query = `(action:delegatebw OR action:undelegatebw) receiver:eosio data.receiver:${accountName}`
-        return this.renderSearchShortcutWrapper(contents, query)
-      case "net":
+//      case "cpu":
+//        contents = this.renderTooltipWrapper(value, this.renderToolTip(accountResources, type))
+//        query = `(action:delegatebw OR action:undelegatebw) receiver:eosio data.receiver:${accountName}`
+//        return this.renderSearchShortcutWrapper(contents, query)
+//      case "net":
+//        contents = this.renderTooltipWrapper(value, this.renderToolTip(accountResources, type))
+//        query = `(action:delegatebw OR action:undelegatebw) receiver:eosio data.receiver:${accountName}`
+//        return this.renderSearchShortcutWrapper(contents, query)
+      case "power":
         contents = this.renderTooltipWrapper(value, this.renderToolTip(accountResources, type))
         query = `(action:delegatebw OR action:undelegatebw) receiver:eosio data.receiver:${accountName}`
         return this.renderSearchShortcutWrapper(contents, query)
@@ -202,14 +206,14 @@ export class AccountPieChart extends React.Component<Props, State> {
         contents = this.renderTooltipWrapper(value)
         query = `receiver:eosio action:refund data.owner:${accountName}`
         return this.renderSearchShortcutWrapper(contents, query)
-      case "REX":
-        contents = this.renderTooltipWrapper(value)
-        query = `account:eosio (action:rentcpu OR action:rentnet OR action:deposit OR action:withdraw OR action:rentram OR action:updaterex OR action:buyrex OR action:sellrex OR action:cnclrexorder) (data.owner:${accountName} OR data.from:${accountName} OR data.receiver:${accountName})`
-        return this.renderSearchShortcutWrapper(contents, query)
-      case "REX_FUNDS":
-        contents = this.renderTooltipWrapper(value)
-        query = `account:eosio (action:rentcpu OR action:rentnet OR action:deposit OR action:withdraw OR action:rentram OR action:updaterex OR action:buyrex OR action:sellrex OR action:cnclrexorder) (data.owner:${accountName} OR data.from:${accountName} OR data.receiver:${accountName})`
-        return this.renderSearchShortcutWrapper(contents, query)
+//      case "REX":
+//        contents = this.renderTooltipWrapper(value)
+//        query = `account:eosio (action:rentcpu OR action:rentnet OR action:deposit OR action:withdraw OR action:rentram OR action:updaterex OR action:buyrex OR action:sellrex OR action:cnclrexorder) (data.owner:${accountName} OR data.from:${accountName} OR data.receiver:${accountName})`
+//        return this.renderSearchShortcutWrapper(contents, query)
+//      case "REX_FUNDS":
+//        contents = this.renderTooltipWrapper(value)
+//        query = `account:eosio (action:rentcpu OR action:rentnet OR action:deposit OR action:withdraw OR action:rentram OR action:updaterex OR action:buyrex OR action:sellrex OR action:cnclrexorder) (data.owner:${accountName} OR data.from:${accountName} OR data.receiver:${accountName})`
+//        return this.renderSearchShortcutWrapper(contents, query)
       case "available_funds":
         contents = this.renderTooltipWrapper(value)
         query = `receiver:eosio.token action:transfer (data.from:${accountName} OR data.to:${accountName})`
