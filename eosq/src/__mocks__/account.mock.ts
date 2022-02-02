@@ -19,6 +19,7 @@ export function getAccountMock(): Account {
     privileged: false,
     ram_quota: 100,
     ram_usage: 10,
+// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //    net_limit: {
 //      used: 12,
 //      available: 23,

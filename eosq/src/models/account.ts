@@ -10,12 +10,13 @@ export interface Account {
   privileged: boolean
   ram_quota: number
   ram_usage: number
+// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //  net_limit: AccountResourceLimit
-//  cpu_limit: AccountResourceLimit
+  cpu_limit?: AccountResourceLimit
   power_limit: AccountResourceLimit
   self_delegated_bandwidth: SelfDelegatedBandwidth
   refund_request?: RefundRequest
-//  cpu_weight: number
+  cpu_weight?: number
 //  net_weight: number
   power_weight: number
   total_resources: AccountTotalResources

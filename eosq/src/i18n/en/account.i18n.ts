@@ -31,8 +31,10 @@ export default {
       self: "Self",
       tooltip: {
         other: "Others",
-        networkTitle: "Total",
-        cpuTitle: "Total"
+// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//        networkTitle: "Total",
+//        cpuTitle: "Total",
+        powerTitle: "Total",
       },
       verified_website: "Verified website (owned by account)",
       voter_info: {
@@ -77,14 +79,15 @@ export default {
     pie_chart: {
       legendTitle: "TOTAL BALANCE",
       labels: {
-        staked_cpu: "STAKED FOR CPU",
-        staked_network: "STAKED FOR NETWORK",
+//        staked_cpu: "STAKED FOR CPU",
+//        staked_network: "STAKED FOR NETWORK",
+        staked_power: "STAKED FOR POWER",
         delegated_cpu: "DELEGATED FOR CPU",
         delegated_network: "DELEGATED FOR NETWORK",
         pending_refund: "PENDING REFUND",
         available_funds: "AVAILABLE FUNDS",
-        rex: "REX",
-        rex_funds: "REX FUNDS"
+//       rex: "REX",
+//       rex_funds: "REX FUNDS"
       }
     },
     banner: {
@@ -104,7 +107,8 @@ export default {
         available: "available",
         memory: "RAM",
         cpu_bandwidth: "CPU",
-        network_bandwidth: "NETWORK"
+        network_bandwidth: "NETWORK",
+        power_bandwidth: "POWER"
       }
     },
     tabs: {

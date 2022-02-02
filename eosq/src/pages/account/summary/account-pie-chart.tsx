@@ -190,6 +190,7 @@ export class AccountPieChart extends React.Component<Props, State> {
     let query = ""
     const accountName = this.props.account.account_name
     switch (type) {
+// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //      case "cpu":
 //        contents = this.renderTooltipWrapper(value, this.renderToolTip(accountResources, type))
 //        query = `(action:delegatebw OR action:undelegatebw) receiver:eosio data.receiver:${accountName}`

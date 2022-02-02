@@ -19,6 +19,7 @@ export interface HierarchyData {
 export interface StakeDetail {
   from: string
   to: string
+// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //  cpu_weight: string
 //  net_weight: string
   power_weight: string

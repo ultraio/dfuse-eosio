@@ -9,6 +9,7 @@ import {
   getWebsiteInfo,
   getRankBgColor,
   StakeDetail,
+// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //  sumCPUStakes,
 //  sumNETStakes,
   sumPowerStakes,

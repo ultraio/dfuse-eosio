@@ -147,6 +147,7 @@ export class AccountStatusBars extends React.Component<Props> {
     )
   }
 
+// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //  renderCPU(
 //    cpuBandwidthContent: number[],
 //    cpuBandwidthTotal: number,

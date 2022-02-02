@@ -47,28 +47,28 @@ export async function registerAccountDetailsListeners(
 
       let { account } = message.data as { account: Account }
       let producerInfo: any
-
-      const rexParams: GetTableRowParams = {
-        json: true,
-        scope: "eosio",
-        table: "rexbal",
-        code: "eosio",
-        table_key: "",
-        lower_bound: accountName,
-        upper_bound: "",
-        limit: 10
-      }
-
-      const rexfundsParams: GetTableRowParams = {
-        json: true,
-        scope: "eosio",
-        table: "rexfund",
-        code: "eosio",
-        table_key: "",
-        lower_bound: accountName,
-        upper_bound: "",
-        limit: 10
-      }
+// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//      const rexParams: GetTableRowParams = {
+//        json: true,
+//        scope: "eosio",
+//        table: "rexbal",
+//        code: "eosio",
+//        table_key: "",
+//        lower_bound: accountName,
+//        upper_bound: "",
+//        limit: 10
+//      }
+//
+//      const rexfundsParams: GetTableRowParams = {
+//        json: true,
+//        scope: "eosio",
+//        table: "rexfund",
+//        code: "eosio",
+//        table_key: "",
+//        lower_bound: accountName,
+//        upper_bound: "",
+//        limit: 10
+//      }
 
       const cpuLoans: any = {
         code: "eosio",
@@ -98,8 +98,8 @@ export async function registerAccountDetailsListeners(
         Promise.all([
           requestProducerAccountTableRows(accountName),
           requestAccountLinkedPermissions(accountName, blockNum),
-          requestContractTableRows(rexParams),
-          requestContractTableRows(rexfundsParams),
+//          requestContractTableRows(rexParams),
+//          requestContractTableRows(rexfundsParams),
           requestContractTableRows(cpuLoans),
           requestContractTableRows(netLoans)
         ])
@@ -112,6 +112,11 @@ export async function registerAccountDetailsListeners(
               if (response[1].linked_permissions) {
                 account.linked_permissions = response[1].linked_permissions
               }
+
+              if(account.cpu_limit !== undefined)
+                account.power_limit = account.cpu_limit;
+              if(account.cpu_weight)
+                account.power_weight = account.cpu_weight;
 
               successCallback(account)
 //              if (response.length >= 3 && response[2]) {
