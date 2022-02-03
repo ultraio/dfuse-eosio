@@ -19,18 +19,12 @@ export function getAccountMock(): Account {
     privileged: false,
     ram_quota: 100,
     ram_usage: 10,
-// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
-//    net_limit: {
-//      used: 12,
-//      available: 23,
-//      max: 34
-//    },
-//    cpu_limit: {
-//      used: 12,
-//      available: 23,
-//      max: 34
-//    },
-    power_limit: {
+    net_limit: {
+      used: 12,
+      available: 23,
+      max: 34
+    },
+    cpu_limit: {
       used: 12,
       available: 23,
       max: 34
@@ -38,6 +32,7 @@ export function getAccountMock(): Account {
     self_delegated_bandwidth: {
       from: "from",
       to: "to",
+// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //      net_weight: "2.2000 EOS",
 //      cpu_weight: "1.3000 EOS"
       power_weight: "3.5000 EOS"

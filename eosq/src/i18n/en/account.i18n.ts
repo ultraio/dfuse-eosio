@@ -106,8 +106,8 @@ export default {
       titles: {
         available: "available",
         memory: "RAM",
-        cpu_bandwidth: "CPU",
-        network_bandwidth: "NETWORK",
+        cpu_bandwidth: "POWER@CPU",
+        network_bandwidth: "POWER@NETWORK",
         power_bandwidth: "POWER"
       }
     },

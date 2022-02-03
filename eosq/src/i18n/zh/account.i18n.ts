@@ -105,8 +105,8 @@ export default {
       titles: {
         available: "目前可用",
         memory: "RAM",
-        cpu_bandwidth: "CPU",
-        network_bandwidth: "网络带宽",
+        cpu_bandwidth: "POWER@CPU",
+        network_bandwidth: "POWER@网络带宽",
         power_bandwidth: "POWER"
       }
     },

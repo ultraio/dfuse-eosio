@@ -78,7 +78,7 @@ export class AccountStatusBars extends React.Component<Props> {
   ): JSX.Element {
     return (
       <Grid mt={[3]} gridTemplateColumns={["1fr"]}>
-        <Cell mb={[1]}>
+        <Cell mb={[1]} borderBottom={`1px dotted ${theme.colors.grey4}`}>
           <Text fontSize={[2]} color={theme.colors.grey5}>
             {t("account.summary.staked_by")}
           </Text>
@@ -237,42 +237,69 @@ export class AccountStatusBars extends React.Component<Props> {
 //  }
 
   renderPower(
-    powerBandwidthContent: number[],
-    powerBandwidthTotal: number,
+    cpuBandwidthContent: number[],
+    cpuBandwidthTotal: number,
+    networkBandwidthContent: number[],
+    networkBandwidthTotal: number,
     totalPower: string,
     stakedPower: string,
     delegatedPower: number,
   ) {
     const powerBandwidthTitle = t("account.summary.tooltip.powerTitle")
-    let amount = powerBandwidthTotal - powerBandwidthContent[0]
-    if (amount < 0) {
-      amount = 0
+    let amountCpu = cpuBandwidthTotal - cpuBandwidthContent[0]
+    if (amountCpu < 0) {
+        amountCpu = 0
+    }
+    let amountNetwork = networkBandwidthTotal - networkBandwidthContent[0]
+    if (amountNetwork < 0) {
+        amountNetwork = 0
     }
     return (
       <Cell
         pb={[3, 0, 0]}
         mb={[3, 0, 0]}
-        borderBottom={[`1px solid ${theme.colors.grey4}`, "0px solid"]}
       >
-        <StatusWidget
-          title={t("account.status_bar.titles.power_bandwidth")}
-          description={t("account.status_bar.titles.available")}
-          amount={
-            <SearchShortcut
-              position="left"
-              query={`receiver:eosio (action:delegatebw OR action:undelegatebw) data.receiver:${this.props.account.account_name}`}
-            >
-              <Text fontSize={[4]}>{formatMicroseconds(amount)}</Text>
-            </SearchShortcut>
-          }
-        />
-        <Grid gridTemplateColumns={["5fr 3fr", "2fr 1fr", "5fr 3fr"]}>
-          {this.renderTimeRatio(powerBandwidthContent[0], powerBandwidthTotal)}
+      <Grid gridTemplateColumns={"1fr 1fr"} gridColumnGap={[0, 8, 5]}>
+        <Cell>
+          <StatusWidget
+            title={t("account.status_bar.titles.cpu_bandwidth")}
+            description={t("account.status_bar.titles.available")}
+            amount={
+              <SearchShortcut
+                position="left"
+                query={`receiver:eosio (action:delegatebw OR action:undelegatebw) data.receiver:${this.props.account.account_name}`}
+              >
+                <Text fontSize={[4]}>{formatMicroseconds(amountCpu)}</Text>
+              </SearchShortcut>
+            }
+          />
+          {this.renderTimeRatio(cpuBandwidthContent[0], cpuBandwidthTotal)}
           <Cell pl={[2]}>
-            <StatusBar content={powerBandwidthContent} total={powerBandwidthTotal} />
+              <StatusBar content={cpuBandwidthContent} total={cpuBandwidthTotal} />
           </Cell>
-        </Grid>
-        {this.renderStakeDetails(powerBandwidthTitle, totalPower, stakedPower, delegatedPower)}
+        </Cell>
+        <Cell>
+          <StatusWidget
+            title={t("account.status_bar.titles.network_bandwidth")}
+            description={t("account.status_bar.titles.available")}
+            amount={
+              <SearchShortcut
+                position="left"
+                query={`receiver:eosio (action:delegatebw OR action:undelegatebw) data.receiver:${this.props.account.account_name}`}
+              >
+                <Text fontSize={[4]}>{formatBytes(amountNetwork)}</Text>
+              </SearchShortcut>
+            }
+          />
+          {this.renderByteRatio(networkBandwidthContent[0], networkBandwidthTotal)}
+          <Cell pl={[2]}>
+              <StatusBar content={networkBandwidthContent} total={networkBandwidthTotal} />
+          </Cell>
+        </Cell>
+      </Grid>
+        <Cell>
+          {this.renderStakeDetails(powerBandwidthTitle, totalPower, stakedPower, delegatedPower)}
+        </Cell>
       </Cell>
     )
   }
@@ -282,8 +309,8 @@ export class AccountStatusBars extends React.Component<Props> {
     const memoryContent = [account.ram_usage]
     const selfDelegatedBandwidth = account.self_delegated_bandwidth
 
-//    const cpuBandwidthContent = [account.cpu_limit.used, account.cpu_limit.available]
-//    const networkBandwidthContent = [account.net_limit.used, account.net_limit.available]
+    const cpuBandwidthContent = [account.cpu_limit.used, account.cpu_limit.available]
+    const networkBandwidthContent = [account.net_limit.used, account.net_limit.available]
 //
 //    const totalNetwork = extractValueWithUnits(account.total_resources.net_weight)[0]
 //    const totalCpu = extractValueWithUnits(account.total_resources.cpu_weight)[0]
@@ -292,7 +319,6 @@ export class AccountStatusBars extends React.Component<Props> {
 //    const delegatedNetwork = parseFloat(totalNetwork) - parseFloat(stakedNetwork)
 //    const delegatedCpu = parseFloat(totalCpu) - parseFloat(stakedCpu)
 
-    const powerBandwidthContent = [account.power_limit.used, account.power_limit.available]
     const totalPower = extractValueWithUnits(account.total_resources.power_weight)[0]
     const stakedPower= extractValueWithUnits(selfDelegatedBandwidth.power_weight)[0]
     const delegatedPower = parseFloat(totalPower) - parseFloat(stakedPower)
@@ -320,11 +346,13 @@ export class AccountStatusBars extends React.Component<Props> {
 //    )
     return (
       <AccountStatusBarsContainer>
-        <Grid gridTemplateColumns={["1fr", "1fr 1fr 1fr"]} gridColumnGap={[0, 4, 5]}>
+        <Grid gridTemplateColumns={["1fr", "1fr 2fr"]} gridColumnGap={[0, 4, 5]}>
           {this.renderRam(memoryContent, account.ram_quota)}
           {this.renderPower(
-            powerBandwidthContent,
-            account.power_limit.max,
+            cpuBandwidthContent,
+            account.cpu_limit.max,
+            networkBandwidthContent,
+            account.net_limit.max,
             totalPower,
             stakedPower,
             delegatedPower,

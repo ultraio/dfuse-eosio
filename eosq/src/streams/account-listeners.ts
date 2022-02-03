@@ -113,8 +113,6 @@ export async function registerAccountDetailsListeners(
                 account.linked_permissions = response[1].linked_permissions
               }
 
-              if(account.cpu_limit !== undefined)
-                account.power_limit = account.cpu_limit;
               if(account.cpu_weight)
                 account.power_weight = account.cpu_weight;
 
