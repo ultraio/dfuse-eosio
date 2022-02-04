@@ -147,7 +147,7 @@ export class AccountStatusBars extends React.Component<Props> {
     )
   }
 
-// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //  renderCPU(
 //    cpuBandwidthContent: number[],
 //    cpuBandwidthTotal: number,
@@ -311,7 +311,8 @@ export class AccountStatusBars extends React.Component<Props> {
 
     const cpuBandwidthContent = [account.cpu_limit.used, account.cpu_limit.available]
     const networkBandwidthContent = [account.net_limit.used, account.net_limit.available]
-//
+
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //    const totalNetwork = extractValueWithUnits(account.total_resources.net_weight)[0]
 //    const totalCpu = extractValueWithUnits(account.total_resources.cpu_weight)[0]
 //    const stakedCpu = extractValueWithUnits(selfDelegatedBandwidth.cpu_weight)[0]
@@ -323,6 +324,7 @@ export class AccountStatusBars extends React.Component<Props> {
     const stakedPower= extractValueWithUnits(selfDelegatedBandwidth.power_weight)[0]
     const delegatedPower = parseFloat(totalPower) - parseFloat(stakedPower)
 
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //    return (
 //      <AccountStatusBarsContainer>
 //        <Grid gridTemplateColumns={["1fr", "1fr 1fr 1fr"]} gridColumnGap={[0, 4, 5]}>

@@ -20,7 +20,7 @@ export interface Account {
   total_resources: AccountTotalResources
   voter_info: VoterInfo
   block_producer_info?: BlockProducerInfo
-// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //  rex_balance?: RexBalance
 //  rex_funds?: RexFunds
 //  net_loans?: number
@@ -60,6 +60,7 @@ export interface AccountCreator {
   trx_id: string
 }
 
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //export interface RexBalance {
 //  matured_rex: number
 //  owner: string
@@ -190,6 +191,7 @@ export interface VoterInfo {
 export interface DelegatedBandwidth {
   from: string
   to: string
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //  net_weight: string
 //  cpu_weight: string
   power_weight: string

@@ -19,7 +19,7 @@ export interface HierarchyData {
 export interface StakeDetail {
   from: string
   to: string
-// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //  cpu_weight: string
 //  net_weight: string
   power_weight: string
@@ -172,6 +172,8 @@ export function getRankBgColor(rankInfo: { rank: number; votePercent: number; we
   return rank % 2 ? "#bfbfbf" : "#d0d0d0"
 }
 
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//  cpu_weight: string
 //export function sumCPUStakes(stakes: StakeDetail[], accountName: string): number {
 //  return stakes.reduce((a: number, b: StakeDetail) => {
 //    if (b.to !== accountName) {
@@ -200,6 +202,8 @@ export function sumPowerStakes(stakes: StakeDetail[], accountName: string): numb
 }
 
 export interface AccountResources {
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//  cpu_weight: string
 //  cpu: {
 //    stakedTotal: number
 //    stakedFromOthers: number
@@ -230,6 +234,8 @@ export function getAccountResources(account: Account, stakes: StakeDetail[]): Ac
   const totalResources = account.total_resources
   const selfDelegated = account.self_delegated_bandwidth
   const refundRequest = account.refund_request
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//  cpu_weight: string
 //  const rexTokens = account.rex_balance
 //    ? account.rex_balance.vote_stake
 //    : `0.0000 ${Config.chain_core_symbol_code}`
@@ -291,6 +297,8 @@ export function getAccountResources(account: Account, stakes: StakeDetail[]): Ac
     stakedPowerFromOthers;
 
   return {
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//  cpu_weight: string
 //    net: {
 //      stakedTotal: stakedNetwork,
 //      stakedFromOthers: stakedNetworkFromOthers,

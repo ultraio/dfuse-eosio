@@ -6,6 +6,7 @@ import {
 } from "../clients/websocket/eosws"
 import { InboundMessage, InboundMessageType, ErrorData } from "@dfuse/client"
 import { voteStore } from "../stores"
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //import { Account, RexFunds, RexBalance, RexLoan, BlockProducerInfo } from "../models/account"
 import { Account, BlockProducerInfo } from "../models/account"
 import {
@@ -47,7 +48,7 @@ export async function registerAccountDetailsListeners(
 
       let { account } = message.data as { account: Account }
       let producerInfo: any
-// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //      const rexParams: GetTableRowParams = {
 //        json: true,
 //        scope: "eosio",
@@ -117,6 +118,8 @@ export async function registerAccountDetailsListeners(
                 account.power_weight = account.cpu_weight;
 
               successCallback(account)
+ 
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //              if (response.length >= 3 && response[2]) {
 //                account = addRexTokensToAccount(account, response[2])
 //              }
@@ -168,6 +171,7 @@ function addProducerInfoToAccount(account: Account, producerInfo: any): Account 
   return account
 }
 
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //function addRexTokensToAccount(account: Account, rexTokens: any): Account {
 //  if (rexTokens && rexTokens.rows && rexTokens.rows[0]) {
 //    const rexTokensData = rexTokens.rows.find((row: RexBalance) => {

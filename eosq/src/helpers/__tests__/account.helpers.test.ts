@@ -9,7 +9,7 @@ import {
   getWebsiteInfo,
   getRankBgColor,
   StakeDetail,
-// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //  sumCPUStakes,
 //  sumNETStakes,
   sumPowerStakes,
@@ -212,6 +212,7 @@ describe("getRankBgColor", () => {
   })
 })
 
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //describe("sumCPUStakes", () => {
 //  it("should add the cpu stakes", () => {
 //    const stakeDetails: StakeDetail[] = [
@@ -298,6 +299,7 @@ describe("getAccountResources", () => {
       {
         from: "from",
         to: "to",
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //        cpu_weight: "3.0000 EOS",
 //        net_weight: "4.5000 EOS"
         power_weight: "7.5000 EOS"

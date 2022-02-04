@@ -31,7 +31,7 @@ export default {
       self: "账户本身",
       tooltip: {
         other: "其他",
-// BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
 //        networkTitle: "网络带宽总计",
 //        cpuTitle: "CPU带宽总计",
         powerTitle: "POWER带宽总计"
