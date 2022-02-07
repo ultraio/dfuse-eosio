@@ -118,5 +118,4 @@ replace github.com/ShinyTrinkets/overseer => github.com/dfuse-io/overseer v0.2.1
 replace github.com/mitchellh/go-testing-interface => github.com/mitchellh/go-testing-interface v1.14.1
 
 //ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
-replace github.com/eoscanada/eos-go => github.com/ultraio/eos-go v0.9.1-0.20220203143721-79b17fea5a0f
-replace github.com/eoscanada/eosc => github.com/ultraio/eosc v1.4.1-0.20220203140518-2e1598cc9abc
+replace github.com/eoscanada/eos-go => github.com/ultraio/eos-go v0.9.1-0.20220207062208-6327041ab3da
