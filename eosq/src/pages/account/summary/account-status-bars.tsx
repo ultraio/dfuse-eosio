@@ -5,11 +5,12 @@ import { StatusBar } from "../../../atoms/status-bar/status-bar"
 import { Text } from "../../../atoms/text/text.component"
 import { Cell, Grid } from "../../../atoms/ui-grid/ui-grid.component"
 import {
-  extractValueWithUnits,
-  formatBytes,
-  formatMicroseconds,
-  INFINITY,
-  NBSP
+    extractValueWithUnits,
+    formatBytes,
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+//    formatMicroseconds,
+    INFINITY, microSecondsToSeconds,
+    NBSP
 } from "@dfuse/explorer"
 import { Account } from "../../../models/account"
 import numeral from "numeral"
@@ -24,6 +25,33 @@ const AccountStatusBarsContainer: React.ComponentType<any> = styled.div`
 
 interface Props {
   account: Account
+}
+
+//ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+  function formatMicroseconds(micro: number) {
+  if(micro == -1) {
+    // special case. Treat it as unlimited
+    return "unlimited";
+  }
+  let unit: string = "us";
+
+  if( micro > 1000000*60*60 ) {
+      micro /= 1000000*60*60;
+      unit = "hr";
+  }
+  else if( micro > 1000000*60 ) {
+      micro /= 1000000*60;
+      unit = "min";
+  }
+  else if( micro > 1000000 ) {
+      micro /= 1000000;
+      unit = "sec";
+  }
+  else if( micro > 1000 ) {
+      micro /= 1000;
+      unit = "ms";
+  }
+  return micro.toFixed(1)+unit;
 }
 
 @observer

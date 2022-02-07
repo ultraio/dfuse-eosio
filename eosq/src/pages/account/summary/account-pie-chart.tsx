@@ -42,8 +42,11 @@ interface State {
 }
 
 const ToolTipUl: React.ComponentType<any> = styled.ul`
-  list-style: none;
-  padding-left: 10px;
+# ultra-andrey-bezrukov --- BLOCK-80 Integrate ultra power into dfuse and remove rex related tables
+#  list-style: none;
+#  padding-left: 10px;
+  padding-left: 1em;
+  margin-top: 0;
   margin-bottom: 0;
 `
 
@@ -116,7 +119,6 @@ export class AccountPieChart extends React.Component<Props, State> {
           {NBSP}
           {Config.chain_core_symbol_code}
         </Cell>
-
         <Cell pb={[1]}>
           Staked To Others:{" "}
           {accountResources[type].stakedToOthers.toFixed(Config.chain_core_symbol_precision)}
@@ -130,7 +132,7 @@ export class AccountPieChart extends React.Component<Props, State> {
               if (index < 20) {
                 return (
                   <li key={index}>
-                    to{" "}
+                    To{" "}
                     <MonospaceText display="inline-block" color={theme.colors.primary}>
                       {stake.to}
                     </MonospaceText>

@@ -70,7 +70,7 @@ require (
 	github.com/streamingfast/fluxdb v0.0.0-20210811195408-0515ef659298
 	github.com/streamingfast/jsonpb v0.0.0-20210811021341-3670f0aa02d0 // indirect
 	github.com/streamingfast/kvdb v0.0.2-0.20210811194032-09bf862bd2e3
-	github.com/streamingfast/logging v0.0.0-20210811175431-f3b44b61606a
+	github.com/streamingfast/logging v0.0.0-20210811175431-f3b44b61606a // indirect
 	github.com/streamingfast/merger v0.0.3-0.20210811195536-1011c89f0a67
 	github.com/streamingfast/node-manager v0.0.2-0.20210830135731-4b00105a1479
 	github.com/streamingfast/opaque v0.0.0-20210811180740-0c01d37ea308
@@ -78,7 +78,7 @@ require (
 	github.com/streamingfast/relayer v0.0.2-0.20210812020310-adcf15941b23
 	github.com/streamingfast/search v0.0.2-0.20210811200310-ec8d3b03e104
 	github.com/streamingfast/search-client v0.0.0-20210811200417-677bdb765983
-	github.com/streamingfast/shutter v1.5.0
+	github.com/streamingfast/shutter v1.5.0 // indirect
 	github.com/streamingfast/validator v0.0.0-20210812013448-b9da5752ce14 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/teris-io/shortid v0.0.0-20201117134242-e59966efd125
