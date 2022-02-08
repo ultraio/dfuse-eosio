@@ -121,7 +121,7 @@ export class AccountStatusBars extends React.Component<Props> {
           </Cell>
         </Grid>
         {other === 0.0 ? null : (
-          <Grid gridTemplateColumns={["auto auto"]}>
+          <Grid mb={[1]} gridTemplateColumns={["auto auto"]}>
             <Cell alignSelf="left" justifySelf="left">
               {t("account.summary.tooltip.other")}
             </Cell>
@@ -131,10 +131,10 @@ export class AccountStatusBars extends React.Component<Props> {
           </Grid>
         )}
         <Grid pt={[0]} gridTemplateColumns={["auto auto"]} gridColumnGap="40px">
-          <Cell fontWeight={["700"]} alignSelf="left" justifySelf="left">
+          <Cell alignSelf="left" justifySelf="left">
             {title}
           </Cell>
-          <Cell fontWeight={["700"]} alignSelf="right" justifySelf="right">
+          <Cell alignSelf="right" justifySelf="right">
             {numeral(total).format(Config.chain_core_asset_format)} {Config.chain_core_symbol_code}
           </Cell>
         </Grid>
@@ -301,10 +301,12 @@ export class AccountStatusBars extends React.Component<Props> {
               </SearchShortcut>
             }
           />
-          {this.renderTimeRatio(cpuBandwidthContent[0], cpuBandwidthTotal)}
-          <Cell pl={[2]}>
+          <Grid gridTemplateColumns={["5fr 3fr", "2fr 1fr", "5fr 3fr"]}>
+            {this.renderTimeRatio(cpuBandwidthContent[0], cpuBandwidthTotal)}
+            <Cell pl={[2]}>
               <StatusBar content={cpuBandwidthContent} total={cpuBandwidthTotal} />
-          </Cell>
+            </Cell>
+          </Grid>
         </Cell>
         <Cell>
           <StatusWidget
@@ -319,10 +321,12 @@ export class AccountStatusBars extends React.Component<Props> {
               </SearchShortcut>
             }
           />
-          {this.renderByteRatio(networkBandwidthContent[0], networkBandwidthTotal)}
-          <Cell pl={[2]}>
+          <Grid gridTemplateColumns={["5fr 3fr", "2fr 1fr", "5fr 3fr"]}>
+            {this.renderByteRatio(networkBandwidthContent[0], networkBandwidthTotal)}
+            <Cell pl={[2]}>
               <StatusBar content={networkBandwidthContent} total={networkBandwidthTotal} />
-          </Cell>
+            </Cell>
+          </Grid>
         </Cell>
       </Grid>
         <Cell>
