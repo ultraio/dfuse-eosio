@@ -545,6 +545,7 @@ func (e *exporter) processContractRow(obj *eossnapshot.KeyValueObject) error {
 
 		if err != nil {
 			// If error try decoding with the fallback ABI
+			var abi *eos.ABI = account.abi
 			if abi, existed := e.decodeFallbackConfig[account.name]; existed {
 				data, err = e.decodeTableRow(abi, obj)
 				if err == nil {
@@ -554,18 +555,19 @@ func (e *exporter) processContractRow(obj *eossnapshot.KeyValueObject) error {
 						zap.String("scope", e.currentTable.Scope),
 						zap.String("primary_key", obj.PrimKey),
 					)
-				} else {
-					// If error try replacing in the row data
-					if replacements, exists := e.replacementConfig[account.name][e.currentTable.TableName]; exists {
-						data, err = e.decodeTableRowReplacement(abi, obj, replacements)
-						if err == nil {
-							e.logger.Debug("Replacement decode",
-								zap.String("account", e.currentTable.Code),
-								zap.String("table", e.currentTable.TableName),
-								zap.String("scope", e.currentTable.Scope),
-								zap.String("primary_key", obj.PrimKey),
-							)
-						}
+				}
+			}
+			if err != nil {
+				// If error try replacing in the row data
+				if replacements, exists := e.replacementConfig[account.name][e.currentTable.TableName]; exists {
+					data, err = e.decodeTableRowReplacement(abi, obj, replacements)
+					if err == nil {
+						e.logger.Debug("Replacement decode",
+							zap.String("account", e.currentTable.Code),
+							zap.String("table", e.currentTable.TableName),
+							zap.String("scope", e.currentTable.Scope),
+							zap.String("primary_key", obj.PrimKey),
+						)
 					}
 				}
 			}
