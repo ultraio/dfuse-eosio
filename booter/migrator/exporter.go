@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"regexp"
 
 	"github.com/eoscanada/eos-go"
 	eossnapshot "github.com/eoscanada/eos-go/snapshot"
@@ -23,12 +24,29 @@ type FallbackConfigs struct {
 	Configs []FallbackConfig `json:configs`
 }
 
+type RowDataReplacement struct {
+	Match *regexp.Regexp
+	Replace []byte
+}
+
+type RowDataReplacementInfo struct {
+	Match   string `json:"match"`
+	Replace string `json:"replace"`
+}
+
+type ReplacementInfo []struct {
+	Contract string `json:"contract"`
+	Table    string `json:"table"`
+	R 		 []RowDataReplacementInfo `json:r`
+}
+
 type exporter struct {
 	snapshotPath  string
 	logger        *zap.Logger
 	outputDataDir string
 
 	decodeFallbackConfig map[string]*eos.ABI
+	replacementConfig map[string]map[string][]RowDataReplacement
 
 	accounts      map[eos.AccountName]*Account
 	codeSequences map[string][]eos.AccountName
@@ -46,7 +64,7 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-func NewExporter(snapshotPath, dataDir string, fallbackConfig string, opts ...Option) (*exporter, error) {
+func NewExporter(snapshotPath, dataDir string, fallbackConfig string, replaceConfig string, opts ...Option) (*exporter, error) {
 	if !fileExists(snapshotPath) {
 		return nil, fmt.Errorf("snapshot file not found %q", snapshotPath)
 	}
@@ -86,10 +104,35 @@ func NewExporter(snapshotPath, dataDir string, fallbackConfig string, opts ...Op
 		}
 	}
 
+    repConf := make(map[string]map[string][]RowDataReplacement)
+	if fileExists(replaceConfig) {
+		jsonFile, err := os.Open(replaceConfig)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			defer jsonFile.Close()
+			var repInfos ReplacementInfo
+			byteValue, _ := ioutil.ReadAll(jsonFile)
+			json.Unmarshal(byteValue, &repInfos)
+
+			for _, repInfo := range repInfos {
+				for _, rep := range repInfo.R {
+					if repConf[repInfo.Contract] == nil {
+						repConf[repInfo.Contract] = make(map[string][]RowDataReplacement)
+					}
+					repConf[repInfo.Contract][repInfo.Table] =
+						append(repConf[repInfo.Contract][repInfo.Table],
+							RowDataReplacement{regexp.MustCompile(rep.Match), []byte(rep.Replace)})
+				}
+			}
+		}
+	}
+
 	e := &exporter{
 		snapshotPath:         snapshotPath,
 		outputDataDir:        dataDir,
 		decodeFallbackConfig: abiConfigs,
+		replacementConfig: 	  repConf,
 		accounts:             map[eos.AccountName]*Account{},
 		codeSequences:        map[string][]eos.AccountName{},
 		tableScopes:          map[string]*tableScope{},
@@ -500,8 +543,8 @@ func (e *exporter) processContractRow(obj *eossnapshot.KeyValueObject) error {
 	if account.abi != nil {
 		data, err := e.decodeTableRow(account.abi, obj)
 
-		// If error check for fallback ABI
 		if err != nil {
+			// If error try decoding with the fallback ABI
 			if abi, existed := e.decodeFallbackConfig[account.name]; existed {
 				data, err = e.decodeTableRow(abi, obj)
 				if err == nil {
@@ -511,6 +554,19 @@ func (e *exporter) processContractRow(obj *eossnapshot.KeyValueObject) error {
 						zap.String("scope", e.currentTable.Scope),
 						zap.String("primary_key", obj.PrimKey),
 					)
+				} else {
+					// If error try replacing in the row data
+					if replacements, exists := e.replacementConfig[account.name][e.currentTable.TableName]; exists {
+						data, err = e.decodeTableRowReplacement(abi, obj, replacements)
+						if err == nil {
+							e.logger.Debug("Replacement decode",
+								zap.String("account", e.currentTable.Code),
+								zap.String("table", e.currentTable.TableName),
+								zap.String("scope", e.currentTable.Scope),
+								zap.String("primary_key", obj.PrimKey),
+							)
+						}
+					}
 				}
 			}
 		}
@@ -548,10 +604,34 @@ func (e *exporter) decodeTableRow(abi *eos.ABI, obj *eossnapshot.KeyValueObject)
 	}
 	_, err = abi.EncodeStruct(tablDef.Type, cnt)
 	if err != nil {
+		return nil, fmt.Errorf("unable to re-encoded the data falling back on hex: %w. Data: %s", err, cnt)
+	}
+	return json.RawMessage(cnt), nil
+}
+
+func (e *exporter) decodeTableRowReplacement(abi *eos.ABI, obj *eossnapshot.KeyValueObject, replacements []RowDataReplacement) ([]byte, error) {
+	tableName := TN(e.currentTable.TableName)
+	tablDef := findTableDefInABI(abi, tableName)
+	if tablDef == nil {
+		return nil, fmt.Errorf("cannot find table definition %q", tableName)
+	}
+	cnt, err := abi.DecodeTableRow(tableName, obj.Value)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode the data falling back on hex: %w", err)
+	}
+	for _, r := range replacements {
+		if r.Match.Match(cnt) {
+			cnt = r.Match.ReplaceAll(cnt, r.Replace)
+		}
+	}
+	_, err = abi.EncodeStruct(tablDef.Type, cnt)
+	if err != nil {
+		e.logger.Info("Cannot: ", zap.String("Data: ", string(cnt)))
 		return nil, fmt.Errorf("unable to re-encoded the data falling back on hex: %w", err)
 	}
 	return json.RawMessage(cnt), nil
 }
+
 
 func (e *exporter) processContractRowIndex(primaryKey string, kind secondaryIndexKind, value interface{}, payer string) error {
 	tableName, id := mustExtractIndexNumber(e.currentTable.TableName)
