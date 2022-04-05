@@ -117,3 +117,6 @@ replace github.com/ShinyTrinkets/overseer => github.com/dfuse-io/overseer v0.2.1
 // The go-testing-interface version matches the Golang version to compile against, in this case, we want
 // compatibility with 1.14 which is our minimum version. So we enforce a strict version to v1.14.1 now.
 replace github.com/mitchellh/go-testing-interface => github.com/mitchellh/go-testing-interface v1.14.1
+
+//ultra-andrey-bezrukov --- BLOCK-178 Dfuse cannot produce JSON data for migration
+replace github.com/eoscanada/eos-go => github.com/ultraio/eos-go v0.9.1-0.20220405083156-132562982a07

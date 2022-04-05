@@ -506,6 +506,7 @@ func (d *ABIDecoder) decodeAction(action *pbcodec.Action, globalSequence uint64,
 		return nil
 	}
 
+	//ultra-andrey-bezrukov --- BLOCK-178 Dfuse cannot produce JSON data for migration
 	if action.Name == "inject" {
 		jsonData, err = DecodeTableInject(jsonData, abi)
 		if err != nil {
@@ -594,6 +595,7 @@ type InjectDataWrite struct {
 	InjectData
 }
 
+//ultra-andrey-bezrukov --- BLOCK-178 Dfuse cannot produce JSON data for migration
 func DecodeTableInject(data []byte, abi *eos.ABI) ([]byte, error) {
 	dataRd := InjectDataRead{}
 	err := json.Unmarshal(data, &dataRd)
