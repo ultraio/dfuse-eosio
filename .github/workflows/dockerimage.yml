@@ -23,7 +23,7 @@ jobs:
           repository: ultraio/eosio
           tag: '2.0.9-1.20.2'
           path: .
-          file:  eosio-2.0.9-1.21.0.deb
+          file:  eosio-2.0.9-1.20.2.deb
           token: '${{ secrets.DEVOPS_SECRET }}'
 
       - name: Get branch name
