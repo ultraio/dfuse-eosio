@@ -1,5 +1,5 @@
-ARG EOSIO_TAG="2.0.9-1.21.0"
-ARG DEB_PKG="eosio-2.0.9-1.21.0.deb"
+ARG EOSIO_TAG="2.0.9-1.24.0-timebomb"
+ARG DEB_PKG="eosio-2.0.9-1.24.0-timebomb.deb"
 
 FROM ubuntu:18.04 AS base
 ARG EOSIO_TAG
