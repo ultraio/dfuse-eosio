@@ -121,6 +121,3 @@ replace github.com/mitchellh/go-testing-interface => github.com/mitchellh/go-tes
 
 //ultra-andrey-bezrukov --- BLOCK-178 Dfuse cannot produce JSON data for migration
 replace github.com/eoscanada/eos-go => github.com/ultraio/eos-go v0.9.1-0.20220615050227-4b5b8bcd73e8
-
-//ultra-igor-sikachyna --- BLOCK-831 Downgrade sys module
-replace golang.org/x/sys => golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
