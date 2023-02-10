@@ -1,5 +1,5 @@
-ARG EOSIO_TAG="timebomb-diablo-release"
-ARG DEB_PKG="eosio-timebomb-diablo-release.deb"
+ARG EOSIO_TAG="2.0.9-1.25.0-timebomb"
+ARG DEB_PKG="eosio-2.0.9-1.25.0-timebomb.deb"
 
 FROM ubuntu:18.04 AS base
 ARG EOSIO_TAG

@@ -21,9 +21,9 @@ jobs:
         uses: Legion2/download-release-action@v2.1.0
         with:
           repository: ultraio/eosio
-          tag: 'timebomb-diablo-release'
+          tag: '2.0.9-1.25.0-timebomb'
           path: .
-          file:  eosio-timebomb-diablo-release.deb
+          file:  eosio-2.0.9-1.25.0-timebomb.deb
           token: '${{ secrets.DEVOPS_SECRET }}'
 
       - name: Get branch name
