@@ -31,6 +31,9 @@ jobs:
         id: branch_name
         run: |
           echo "{VERSION}={$([[ $GITHUB_REF =~ "refs/tags" ]] && echo ${GITHUB_REF#refs/tags/} || echo "${GITHUB_SHA:0:7}")}" >> $GITHUB_OUTPUT
+
+      - name: Log Output
+        run: echo ${{ steps.branch_name.outputs.VERSION }}
       # - name: Setup gcloud cli
       #   uses: google-github-actions/setup-gcloud@v0
       #   with:
