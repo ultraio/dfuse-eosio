@@ -27,12 +27,15 @@ jobs:
           file:  eosio-2.0.9-1.25.0.deb
           token: '${{ secrets.DEVOPS_SECRET }}'
 
-      - name: Setup gcloud cli
-        uses: google-github-actions/setup-gcloud@v0
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
         with:
-          service_account_key: ${{ secrets.GCR_KEY }}
+          credentials_json: '${{ secrets.GCR_KEY }}'
+
+      - name: Setup gcloud cli
+        uses: google-github-actions/setup-gcloud@v1
+        with:
           project_id: dfuse-302310
-          export_default_credentials: true
 
       - name: Build Image
         run: |-
