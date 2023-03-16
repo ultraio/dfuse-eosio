@@ -1,5 +1,5 @@
-ARG EOSIO_TAG="2.0.9-1.25.0"
-ARG DEB_PKG="eosio-2.0.9-1.25.0.deb"
+ARG EOSIO_TAG="2.0.9-1.26.0-trxqueue-2"
+ARG DEB_PKG="2.0.9-1.26.0-trxqueue-2"
 
 FROM ubuntu:18.04 AS base
 ARG EOSIO_TAG
