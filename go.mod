@@ -235,4 +235,5 @@ replace (
 	github.com/streamingfast/firehose => github.com/EOS-Nation/firehose v0.1.1-0.20221109131056-e9c526ce351e
 )
 
-replace github.com/eoscanada/eos-go => github.com/EOS-Nation/eos-go v0.10.3-0.20230328111622-b58e29c1532e
+// replace github.com/eoscanada/eos-go => github.com/EOS-Nation/eos-go v0.10.3-0.20230328111622-b58e29c1532e
+replace github.com/eoscanada/eos-go => github.com/ultraio/eos-go v0.9.1-0.20230403110327-4b0c4d5b7b69
