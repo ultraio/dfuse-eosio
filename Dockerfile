@@ -14,6 +14,8 @@ RUN rm -rf /var/cache/apt/*
 FROM node:12 AS dlauncher
 WORKDIR /work
 ADD go.mod /work
+# https://serverfault.com/questions/1074688/security-debian-org-does-not-have-a-release-file-on-with-debian-docker-images
+RUN sed -i 's/stable\/updates/stable-security\/updates/' /etc/apt/sources.list
 RUN apt update && apt-get -y install git
 RUN cd /work && git clone https://github.com/streamingfast/dlauncher.git dlauncher &&\
     grep -w github.com/streamingfast/dlauncher go.mod | sed 's/.*-\([a-f0-9]*$\)/\1/' |head -n 1 > dlauncher.hash &&\
