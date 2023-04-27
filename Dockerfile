@@ -11,12 +11,12 @@ RUN dpkg -i /var/cache/apt/archives/${DEB_PKG}
 
 RUN rm -rf /var/cache/apt/*
 
-FROM node:latest AS dlauncher
+FROM node:12 AS dlauncher
 WORKDIR /work
 ADD go.mod /work
 # https://serverfault.com/questions/1074688/security-debian-org-does-not-have-a-release-file-on-with-debian-docker-images
 # RUN sed -i 's/stable\/updates/stable-security\/updates/' /etc/apt/sources.list
-RUN apt update && apt-get -y install git
+RUN apt-get update && apt-get -y install git
 RUN cd /work && git clone https://github.com/streamingfast/dlauncher.git dlauncher &&\
     grep -w github.com/streamingfast/dlauncher go.mod | sed 's/.*-\([a-f0-9]*$\)/\1/' |head -n 1 > dlauncher.hash &&\
     cd dlauncher &&\
@@ -24,7 +24,7 @@ RUN cd /work && git clone https://github.com/streamingfast/dlauncher.git dlaunch
     cd dashboard/client &&\
     yarn install --frozen-lockfile && yarn build
 
-FROM node:latest AS eosq
+FROM node:12 AS eosq
 ADD eosq /work
 WORKDIR /work
 RUN yarn install --frozen-lockfile && yarn build
