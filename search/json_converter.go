@@ -67,7 +67,7 @@ func convertNumericFieldsToStrings(normalized interface{}) (map[string]interface
 		return nil, err
 	}
 	var converted map[string]interface{}
-    if err = json.Unmarshal(convertedJsonData, &converted); err != nil {
+	if err = json.Unmarshal(convertedJsonData, &converted); err != nil {
 		return nil, err
 	}
 	return converted, nil
