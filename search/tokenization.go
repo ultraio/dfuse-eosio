@@ -95,6 +95,11 @@ func (t *tokenizer) tokenizeData(data string) map[string]interface{} {
 			if skipField {
 				continue
 			}
+			if normalizedField == "issue" {
+				if converted, err := convertNumericFieldsToStrings(normalizedValue); err == nil {
+					normalizedValue = converted
+				}
+			}
 
 			out[normalizedField] = normalizedValue
 		}
