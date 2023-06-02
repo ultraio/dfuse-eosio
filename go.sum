@@ -903,8 +903,6 @@ github.com/streamingfast/pbgo v0.0.6-0.20211029044348-267c903ccb21 h1:0qKG7EffiX
 github.com/streamingfast/pbgo v0.0.6-0.20211029044348-267c903ccb21/go.mod h1:fobYEIfCKwPOY+VLX7HXBVuhrn+iZrzujKrpCgfG3+Q=
 github.com/streamingfast/relayer v0.0.2-0.20210812020310-adcf15941b23 h1:kJz7rG5TDGUc/MpYgcVLFdbl7XL4KslD73l8zZ+aVLk=
 github.com/streamingfast/relayer v0.0.2-0.20210812020310-adcf15941b23/go.mod h1:ybqMjC0jMhfHvcUaB035Z8sNVLjwcu3KGUrVguG7zB4=
-github.com/streamingfast/search v0.0.2-0.20210811200310-ec8d3b03e104 h1:aToe3vfghl9j2c8uMQfK1SZzSSdtajCAPnMJokae5Lc=
-github.com/streamingfast/search v0.0.2-0.20210811200310-ec8d3b03e104/go.mod h1:a1f4zBjFCEfFHjsqr9Qy9mEam51UveTvwSI2hasHOLc=
 github.com/streamingfast/search-client v0.0.0-20210811200417-677bdb765983 h1:8nxDVuD9XV/p2D5Hp0qFzCzPztlyYyLB8aEWwbTbKiA=
 github.com/streamingfast/search-client v0.0.0-20210811200417-677bdb765983/go.mod h1:i9Ls2y0YWYM+ChJoqcYlOfIpOgBQER2ksP/orkf8pFk=
 github.com/streamingfast/shutter v1.5.0 h1:NpzDYzj0HVpSiDJVO/FFSL6QIK/YKOxY0gJAtyaTOgs=
@@ -968,6 +966,8 @@ github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljT
 github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43/go.mod h1:iT03XoTwV7xq/+UGwKO3UbC1nNNlopQiY61beSdrtOA=
 github.com/ultraio/eos-go v0.9.1-0.20230403110327-4b0c4d5b7b69 h1:T+J3I39JsPFnAH5uC7OP0lL++ep+hSmqiGjAn+8dJ3Q=
 github.com/ultraio/eos-go v0.9.1-0.20230403110327-4b0c4d5b7b69/go.mod h1:BCTBH+XkEi+gO38MHRDm0LLcUhaIlekey+SCBaIAJTk=
+github.com/ultraio/streamingfast-search v0.0.0-20230602050928-2347921718d4 h1:G+7FUW3BBDPlYOQ7vb0Q+2QM4HV0I7PuqnoyiK+g6G0=
+github.com/ultraio/streamingfast-search v0.0.0-20230602050928-2347921718d4/go.mod h1:a1f4zBjFCEfFHjsqr9Qy9mEam51UveTvwSI2hasHOLc=
 github.com/unrolled/render v1.0.0 h1:XYtvhA3UkpB7PqkvhUFYmpKD55OudoIeygcfus4vcd4=
 github.com/unrolled/render v1.0.0/go.mod h1:tu82oB5W2ykJRVioYsB+IQKcft7ryBr7w12qMBUPyXg=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
