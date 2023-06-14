@@ -94,7 +94,7 @@ build() {
 
     echo "** Building & installing dfuseeos binary for $GIT_COMMIT **"
     # ultra-duncan --- disable symbol table by default
-    if [[ $enable_symbol_table != true ]]; then
+    if [[ $enable_symbol_table == true ]]; then
       echo "** Enable symbol table only work with go lang version is < 1.20. **"
       go install -ldflags "-X main.commit=$GIT_COMMIT" ./cmd/dfuseeos
     else
