@@ -2,7 +2,7 @@ ARG VERSION=""
 ARG EOSIO_TAG=""
 ARG DEB_PKG=""
 
-FROM ubuntu:18.04 AS base
+FROM ubuntu:22.04 AS base
 ARG EOSIO_TAG
 ARG DEB_PKG
 RUN apt update && apt-get -y install curl ca-certificates libicu60 libusb-1.0-0 libcurl3-gnutls
