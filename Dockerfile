@@ -1,5 +1,6 @@
-ARG EOSIO_TAG="2.0.9-1.25.0"
-ARG DEB_PKG="eosio-2.0.9-1.25.0.deb"
+ARG VERSION=""
+ARG EOSIO_TAG=""
+ARG DEB_PKG=""
 
 FROM ubuntu:18.04 AS base
 ARG EOSIO_TAG
@@ -11,7 +12,7 @@ RUN dpkg -i /var/cache/apt/archives/${DEB_PKG}
 
 RUN rm -rf /var/cache/apt/*
 
-FROM node:12 AS dlauncher
+FROM node:14 AS dlauncher
 WORKDIR /work
 ADD go.mod /work
 RUN apt update && apt-get -y install git
@@ -22,7 +23,7 @@ RUN cd /work && git clone https://github.com/streamingfast/dlauncher.git dlaunch
     cd dashboard/client &&\
     yarn install --frozen-lockfile && yarn build
 
-FROM node:12 AS eosq
+FROM node:14 AS eosq
 ADD eosq /work
 WORKDIR /work
 RUN yarn install --frozen-lockfile && yarn build
@@ -47,7 +48,7 @@ RUN cd /work/dashboard && go generate
 RUN cd /work/booter/migrator && go generate
 RUN cd /work/dgraphql && go generate
 RUN go test ./...
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" -v -o /work/build/dfuseeos ./cmd/dfuseeos
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION}" -v -o /work/build/dfuseeos ./cmd/dfuseeos
 
 FROM base
 RUN mkdir -p /app/ && curl -Lo /app/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.2.2/grpc_health_probe-linux-amd64 && chmod +x /app/grpc_health_probe
