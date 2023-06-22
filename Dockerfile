@@ -1,3 +1,4 @@
+ARG COMMIT=""
 ARG VERSION=""
 ARG EOSIO_TAG=""
 ARG DEB_PKG=""
@@ -42,13 +43,13 @@ COPY --from=eosq      /work/ /work/eosq
 # The copy needs to be one level higher than work, the dashboard generates expects this file layout
 COPY --from=dlauncher /work/dlauncher /dlauncher
 RUN cd /dlauncher/dashboard && go generate
-RUN cd /work/eosq/app/eosq && go generates
+RUN cd /work/eosq/app/eosq && go generate
 
 #NOTE: dashboard is removed and migrator not being used anymore
 
 RUN cd /work/dgraphql && go generate
 RUN go test ./...
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION}" -v -o /work/build/dfuseeos ./cmd/dfuseeos
+RUN go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" -v -o /work/build/dfuseeos ./cmd/dfuseeos
 
 FROM base
 RUN mkdir -p /app/ && curl -Lo /app/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.2.2/grpc_health_probe-linux-amd64 && chmod +x /app/grpc_health_probe
