@@ -42,10 +42,10 @@ COPY --from=eosq      /work/ /work/eosq
 # The copy needs to be one level higher than work, the dashboard generates expects this file layout
 COPY --from=dlauncher /work/dlauncher /dlauncher
 RUN cd /dlauncher/dashboard && go generate
-RUN cd /work/eosq/app/eosq && go generate
-RUN cd /work/dashboard && go generate
-# adding booter migrator for migration
-RUN cd /work/booter/migrator && go generate
+RUN cd /work/eosq/app/eosq && go generates
+
+#NOTE: dashboard is removed and migrator not being used anymore
+
 RUN cd /work/dgraphql && go generate
 RUN go test ./...
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION}" -v -o /work/build/dfuseeos ./cmd/dfuseeos
