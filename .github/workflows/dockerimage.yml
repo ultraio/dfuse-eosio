@@ -1,4 +1,5 @@
 name: Docker Image CI
+run-name: Build Dfuse Image ${{ github.event.inputs.dfuse }} With Nodeos ${{ github.event.inputs.dfuse }}
 
 on:
   # Only allows triggering through the Github Workflow UI
@@ -9,7 +10,8 @@ on:
         required: true
         type: string
       eosio:
-        description: Tag from eosio.
+        description: Tag from eosio
+        default: 'null'
         required: false
         type: string
       overwrite-dfuse:
@@ -31,7 +33,7 @@ jobs:
           echo "DFUSE_TAG=${{ github.event.inputs.dfuse }}" >> $GITHUB_ENV
 
       - name: Set Nodeos Version
-        if: ${{ github.event.inputs.eosio != '' }}
+        if: ${{ github.event.inputs.eosio != 'null' }}
         run: |
           echo "EOSIO_TAG=${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
           echo "DFUSE_NODEOS_TAG=${{ github.event.inputs.dfuse }}-nodeos${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
@@ -49,7 +51,7 @@ jobs:
 
       # Only download eosio if set
       - name: Download EOSIO Debian package
-        if: ${{ github.event.inputs.eosio != '' }}
+        if: ${{ github.event.inputs.eosio != 'null' }}
         uses: Legion2/download-release-action@v2.1.0
         with:
           repository: ultraio/eosio
@@ -90,7 +92,7 @@ jobs:
       
       # Only build dfuse with nodeos if eosio is set
       - name: Build Dfuse Image With Nodeos
-        if: ${{ github.event.inputs.eosio != '' }}
+        if: ${{ github.event.inputs.eosio != 'null' }}
         run: |
           docker build -f nodeos.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }} \
                 --build-arg DFUSE_IMAGE=${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
