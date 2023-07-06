@@ -29,7 +29,7 @@ jobs:
       - name: Set Dfuse Version
         run: |
           echo "DFUSE_TAG=${{ github.event.inputs.dfuse }}" >> $GITHUB_ENV
-      
+
       - name: Set Nodeos Version
         if: ${{ github.event.inputs.eosio != '' }}
         run: |
@@ -74,14 +74,14 @@ jobs:
         run: |
           gcloud auth configure-docker -q
 
-      # Check if dfuse image is existed. 0 = existed, 1 = not existed
+      # Check if dfuse image is existed. 0 = existed, others = not existed
       - name: Check Dfuse Image
         run: |
           echo "DFUSE_IMAGE_EXISTED=$(docker image inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} > /dev/null ; echo $?)" >> $GITHUB_ENV
 
       # Only build dfuse image if not existed or overwrite is set
       - name: Build Dfuse Image Without Nodeos
-        if: ${{ env.DFUSE_IMAGE_EXISTED == 1 || github.event.inputs.overwrite-dfuse }}
+        if: ${{ env.DFUSE_IMAGE_EXISTED != 0 || github.event.inputs.overwrite-dfuse }}
         run: |
           docker build -f dfuse.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
                 --build-arg VERSION=${{ env.DFUSE_TAG }} \
