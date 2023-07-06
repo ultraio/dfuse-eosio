@@ -77,7 +77,7 @@ jobs:
       # Check if dfuse image is existed. 0 = existed, others = not existed
       - name: Check Dfuse Image
         run: |
-          echo "DFUSE_IMAGE_EXISTED=$(docker image inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} > /dev/null ; echo $?)" >> $GITHUB_ENV
+          echo "DFUSE_IMAGE_EXISTED=$(docker manifest inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} > /dev/null ; echo $?)" >> $GITHUB_ENV
 
       # Only build dfuse image if not existed or overwrite is set
       - name: Build Dfuse Image Without Nodeos
