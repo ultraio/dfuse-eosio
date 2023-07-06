@@ -1,5 +1,5 @@
 name: Docker Image CI
-run-name: Build dfuse Image with tag ${{ github.event.inputs.dfuse }} and nodeos tag ${{ github.event.inputs.eosio }}
+run-name: Build dfuse Image with tag '${{ github.event.inputs.dfuse }}'' and nodeos tag '${{ github.event.inputs.eosio }}'
 
 on:
   # Only allows triggering through the Github Workflow UI
