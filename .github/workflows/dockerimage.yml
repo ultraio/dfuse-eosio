@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Set Dfuse Version
         run: |
-          echo "DFUSE_TAG"=${{ github.event.inputs.dfuse }}" >> $GITHUB_ENV
+          echo "DFUSE_TAG=${{ github.event.inputs.dfuse }}" >> $GITHUB_ENV
       
       - name: Set Nodeos Version
         if: ${{ github.event.inputs.eosio != '' }}
