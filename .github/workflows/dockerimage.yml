@@ -1,5 +1,5 @@
 name: Docker Image CI
-run-name: Build image with dfuse-esoio:'${{ github.event.inputs.dfuse }}' and eosio:'${{ github.event.inputs.eosio }}'
+run-name: Build image with dfuse-esoio:'${{ github.event.inputs.dfuse-eosio }}' and eosio:'${{ github.event.inputs.eosio }}'
 
 on:
   # Only allows triggering through the Github Workflow UI
