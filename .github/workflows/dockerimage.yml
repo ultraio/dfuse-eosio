@@ -38,27 +38,27 @@ jobs:
           echo "EOSIO_TAG=${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
           echo "DFUSE_NODEOS_TAG=${{ github.event.inputs.dfuse }}-nodeos${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
 
-      # # checkout based on dfuse tag
-      # - name: Checkout dfuse-eosio
-      #   uses: actions/checkout@v3
-      #   with:
-      #     ref: "${{ env.DFUSE_TAG }}"
+      # checkout based on dfuse tag
+      - name: Checkout dfuse-eosio
+        uses: actions/checkout@v3
+        with:
+          ref: "${{ env.DFUSE_TAG }}"
 
-      # # check release commit
-      # - name: Update Commit Hash
-      #   run: |
-      #     echo "RELEASE_COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      # check release commit
+      - name: Update Commit Hash
+        run: |
+          echo "RELEASE_COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      # # Only download eosio if set
-      # - name: Download EOSIO Debian package
-      #   if: ${{ github.event.inputs.eosio != 'null' }}
-      #   uses: Legion2/download-release-action@v2.1.0
-      #   with:
-      #     repository: ultraio/eosio
-      #     tag: '${{ github.event.inputs.eosio }}'
-      #     path: .
-      #     file:  eosio-${{ env.EOSIO_TAG }}.deb
-      #     token: '${{ secrets.DEVOPS_SECRET }}'
+      # Only download eosio if set
+      - name: Download EOSIO Debian package
+        if: ${{ github.event.inputs.eosio != 'null' }}
+        uses: Legion2/download-release-action@v2.1.0
+        with:
+          repository: ultraio/eosio
+          tag: '${{ github.event.inputs.eosio }}'
+          path: .
+          file:  eosio-${{ env.EOSIO_TAG }}.deb
+          token: '${{ secrets.DEVOPS_SECRET }}'
 
       # gcloud authorization
       - id: 'auth'
@@ -76,7 +76,7 @@ jobs:
         run: |
           gcloud auth configure-docker -q
 
-      # Check if dfuse image is existed. 0 = existed, others = not existed
+      # Check if dfuse image is existed. Failed if not existed
       - name: Check Dfuse Image
         id: dfuse-check
         continue-on-error: true
@@ -87,10 +87,17 @@ jobs:
       - name: Build Dfuse Image Without Nodeos
         if: ${{ steps.dfuse-check.outcome == 'failure' || github.event.inputs.overwrite-dfuse == 'true' }}
         run: |
-          echo 'build dfuse'
+          docker build -f dfuse.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
+                --build-arg VERSION=${{ env.DFUSE_TAG }} \
+                --build-arg COMMIT=${{ env.RELEASE_COMMIT }}
+          docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
       
       # Only build dfuse with nodeos if eosio is set and dfuse image are exist
       - name: Build Dfuse Image With Nodeos
         if: ${{ github.event.inputs.eosio != 'null' }}
         run: |
-          echo 'build nodeos'
+          docker build -f nodeos.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }} \
+                --build-arg DFUSE_IMAGE=${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
+                --build-arg DEB_PKG=eosio-${{ env.EOSIO_TAG }}.deb
+          docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }}
+          
