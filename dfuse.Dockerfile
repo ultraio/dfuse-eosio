@@ -39,12 +39,10 @@ COPY --from=eosq      /work/ /work/eosq
 COPY --from=dlauncher /work/dlauncher /dlauncher
 RUN cd /dlauncher/dashboard && go generate
 RUN cd /work/eosq/app/eosq && go generate
-
-#NOTE: dashboard is removed and migrator not being used anymore
-
+RUN if ["$UBUNTU_VERSION" == "18.04"] ; then cd /work/dashboard && go generate; fi
 RUN cd /work/dgraphql && go generate
 RUN go test ./...
-RUN go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" -v -o /work/build/dfuseeos ./cmd/dfuseeos
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" -v -o /work/build/dfuseeos ./cmd/dfuseeos
 
 FROM base
 RUN mkdir -p /app/ && curl -Lo /app/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.2.2/grpc_health_probe-linux-amd64 && chmod +x /app/grpc_health_probe
