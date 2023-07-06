@@ -1,11 +1,11 @@
 name: Docker Image CI
-run-name: Build image with dfuse:'${{ github.event.inputs.dfuse }}' and eosio:'${{ github.event.inputs.eosio }}'
+run-name: Build image with dfuse-esoio:'${{ github.event.inputs.dfuse }}' and eosio:'${{ github.event.inputs.eosio }}'
 
 on:
   # Only allows triggering through the Github Workflow UI
   workflow_dispatch:
     inputs:
-      dfuse:
+      dfuse-eosio:
         description: Tag from dfuse-eosio
         required: true
         type: string
@@ -30,13 +30,13 @@ jobs:
     steps:
       - name: Set Dfuse Version
         run: |
-          echo "DFUSE_TAG=${{ github.event.inputs.dfuse }}" >> $GITHUB_ENV
+          echo "DFUSE_TAG=${{ github.event.inputs.dfuse-eosio }}" >> $GITHUB_ENV
 
       - name: Set Nodeos Version
         if: ${{ github.event.inputs.eosio != 'null' }}
         run: |
           echo "EOSIO_TAG=${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
-          echo "DFUSE_NODEOS_TAG=${{ github.event.inputs.dfuse }}-nodeos${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
+          echo "DFUSE_NODEOS_TAG=${{ github.event.inputs.dfuse-eosio }}-nodeos${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
 
       # checkout based on dfuse tag
       - name: Checkout dfuse-eosio
