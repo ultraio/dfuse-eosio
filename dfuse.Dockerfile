@@ -5,8 +5,8 @@ ARG VERSION=""
 # should be removed in future
 ARG UBUNTU_VERSION="22.04"
 FROM ubuntu:${UBUNTU_VERSION} AS base
-RUN if ["$UBUNTU_VERSION" == "18.04"] ; apt update && apt-get -y install curl ca-certificates libicu60 libusb-1.0-0 libcurl3-gnutls ; fi
-RUN if ["$UBUNTU_VERSION" == "22.04"] ; apt update && apt-get -y install curl ca-certificates libc6 libgcc1 libstdc++6 libtinfo5 zlib1g libusb-1.0-0 libcurl3-gnutls ; fi
+RUN if ["$UBUNTU_VERSION" == "18.04"] ; then apt update && apt-get -y install curl ca-certificates libicu60 libusb-1.0-0 libcurl3-gnutls ; fi
+RUN if ["$UBUNTU_VERSION" == "22.04"] ; then apt update && apt-get -y install curl ca-certificates libc6 libgcc1 libstdc++6 libtinfo5 zlib1g libusb-1.0-0 libcurl3-gnutls ; fi
 
 FROM node:14 AS dlauncher
 WORKDIR /work
