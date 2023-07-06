@@ -85,11 +85,8 @@ jobs:
 
       # Only build dfuse image if not existed or overwrite is set
       - name: Build Dfuse Image Without Nodeos
-        if: ${{ steps.dfuse-check.outcome == 'failure' || github.event.inputs.overwrite-dfuse == true }}
+        if: ${{ steps.dfuse-check.outcome == 'failure' || github.event.inputs.overwrite-dfuse == 'true' }}
         run: |
-          echo ${{ github.event.inputs.overwrite-dfuse }}
-          echo ${{ steps.dfuse-check.outcome }}
-          echo ${{ steps.dfuse-check.outcome == 'failure' || github.event.inputs.overwrite-dfuse == true }}
           echo 'build dfuse'
       
       # Only build dfuse with nodeos if eosio is set and dfuse image are exist
