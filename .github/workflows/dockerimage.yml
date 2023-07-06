@@ -80,21 +80,23 @@ jobs:
       - name: Check Dfuse Image
         run: |
           echo "DFUSE_IMAGE_EXISTED=$(docker manifest inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} > /dev/null ; echo $?)" >> $GITHUB_ENV
+          echo ${{ env.DFUSE_IMAGE_EXISTED }}
+          echo ${{ env.DFUSE_IMAGE_EXISTED != 0 || github.event.inputs.overwrite-dfuse == true }}
 
-      # Only build dfuse image if not existed or overwrite is set
-      - name: Build Dfuse Image Without Nodeos
-        if: ${{ env.DFUSE_IMAGE_EXISTED != 0 || github.event.inputs.overwrite-dfuse }}
-        run: |
-          docker build -f dfuse.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
-                --build-arg VERSION=${{ env.DFUSE_TAG }} \
-                --build-arg COMMIT=${{ env.RELEASE_COMMIT }}
-          docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
+      # # Only build dfuse image if not existed or overwrite is set
+      # - name: Build Dfuse Image Without Nodeos
+      #   if: ${{ env.DFUSE_IMAGE_EXISTED != 0 || github.event.inputs.overwrite-dfuse == true }}
+      #   run: |
+      #     docker build -f dfuse.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
+      #           --build-arg VERSION=${{ env.DFUSE_TAG }} \
+      #           --build-arg COMMIT=${{ env.RELEASE_COMMIT }}
+      #     docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
       
-      # Only build dfuse with nodeos if eosio is set
-      - name: Build Dfuse Image With Nodeos
-        if: ${{ github.event.inputs.eosio != 'null' }}
-        run: |
-          docker build -f nodeos.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }} \
-                --build-arg DFUSE_IMAGE=${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
-                --build-arg DEB_PKG=eosio-${{ env.EOSIO_TAG }}.deb
-          docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }}
+      # # Only build dfuse with nodeos if eosio is set
+      # - name: Build Dfuse Image With Nodeos
+      #   if: ${{ github.event.inputs.eosio != 'null' }}
+      #   run: |
+      #     docker build -f nodeos.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }} \
+      #           --build-arg DFUSE_IMAGE=${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
+      #           --build-arg DEB_PKG=eosio-${{ env.EOSIO_TAG }}.deb
+      #     docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }}
