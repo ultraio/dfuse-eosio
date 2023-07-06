@@ -1,5 +1,5 @@
 name: Docker Image CI
-run-name: Build Dfuse Image ${{ github.event.inputs.dfuse }} With Nodeos ${{ github.event.inputs.dfuse }}
+run-name: Build dfuse Image with tag ${{ github.event.inputs.dfuse }} and nodeos tag ${{ github.event.inputs.eosio }}
 
 on:
   # Only allows triggering through the Github Workflow UI
@@ -38,48 +38,48 @@ jobs:
           echo "EOSIO_TAG=${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
           echo "DFUSE_NODEOS_TAG=${{ github.event.inputs.dfuse }}-nodeos${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
 
-      # checkout based on dfuse tag
-      - name: Checkout dfuse-eosio
-        uses: actions/checkout@v3
-        with:
-          ref: "${{ env.DFUSE_TAG }}"
+      # # checkout based on dfuse tag
+      # - name: Checkout dfuse-eosio
+      #   uses: actions/checkout@v3
+      #   with:
+      #     ref: "${{ env.DFUSE_TAG }}"
 
-      # check release commit
-      - name: Update Commit Hash
-        run: |
-          echo "RELEASE_COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      # # check release commit
+      # - name: Update Commit Hash
+      #   run: |
+      #     echo "RELEASE_COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      # Only download eosio if set
-      - name: Download EOSIO Debian package
-        if: ${{ github.event.inputs.eosio != 'null' }}
-        uses: Legion2/download-release-action@v2.1.0
-        with:
-          repository: ultraio/eosio
-          tag: '${{ github.event.inputs.eosio }}'
-          path: .
-          file:  eosio-${{ env.EOSIO_TAG }}.deb
-          token: '${{ secrets.DEVOPS_SECRET }}'
+      # # Only download eosio if set
+      # - name: Download EOSIO Debian package
+      #   if: ${{ github.event.inputs.eosio != 'null' }}
+      #   uses: Legion2/download-release-action@v2.1.0
+      #   with:
+      #     repository: ultraio/eosio
+      #     tag: '${{ github.event.inputs.eosio }}'
+      #     path: .
+      #     file:  eosio-${{ env.EOSIO_TAG }}.deb
+      #     token: '${{ secrets.DEVOPS_SECRET }}'
 
-      # gcloud authorization
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v1'
-        with:
-          credentials_json: '${{ secrets.GCR_KEY }}'
+      # # gcloud authorization
+      # - id: 'auth'
+      #   uses: 'google-github-actions/auth@v1'
+      #   with:
+      #     credentials_json: '${{ secrets.GCR_KEY }}'
 
-      - name: Setup gcloud cli
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: dfuse-302310
+      # - name: Setup gcloud cli
+      #   uses: google-github-actions/setup-gcloud@v1
+      #   with:
+      #     project_id: dfuse-302310
 
-      # docker gcloud config
-      - name: Docker config
-        run: |
-          gcloud auth configure-docker -q
+      # # docker gcloud config
+      # - name: Docker config
+      #   run: |
+      #     gcloud auth configure-docker -q
 
       # Check if dfuse image is existed. 0 = existed, others = not existed
       - name: Check Dfuse Image
         run: |
-          echo "DFUSE_IMAGE_EXISTED=$(docker manifest inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} > /dev/null ; echo $?)" >> $GITHUB_ENV
+          echo "DFUSE_IMAGE_EXISTED=$(docker image inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} > /dev/null ; echo $?)" >> $GITHUB_ENV
           echo ${{ env.DFUSE_IMAGE_EXISTED }}
           echo ${{ env.DFUSE_IMAGE_EXISTED != 0 || github.event.inputs.overwrite-dfuse == true }}
 
