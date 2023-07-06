@@ -97,7 +97,7 @@ jobs:
         if: ${{ github.event.inputs.eosio != 'null' }}
         run: |
           docker build -f nodeos.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }} \
-                --build-arg DFUSE_IMAGE=${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
+                --build-arg DFUSE_IMAGE=${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
                 --build-arg DEB_PKG=eosio-${{ env.EOSIO_TAG }}.deb
           docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }}
           
