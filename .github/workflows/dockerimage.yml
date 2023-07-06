@@ -80,7 +80,7 @@ jobs:
       - name: Check Dfuse Image
         id: dfuse-check
         run: |
-          docker image inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
+          docker manifest inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
 
       # Only build dfuse image if not existed or overwrite is set
       - name: Build Dfuse Image Without Nodeos
