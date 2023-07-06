@@ -91,6 +91,6 @@ jobs:
       
       # Only build dfuse with nodeos if eosio is set and dfuse image are exist
       - name: Build Dfuse Image With Nodeos
-        if: ${{ steps.dfuse-check.outcome == 'success' }}
+        if: ${{ github.event.inputs.eosio != 'null' }}
         run: |
           echo 'build nodeos'
