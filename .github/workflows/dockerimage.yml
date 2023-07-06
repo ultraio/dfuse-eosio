@@ -15,9 +15,13 @@ on:
         required: false
         type: string
       overwrite-dfuse:
-        description: Overwrite Existed Dfuse Image.
+        description: Overwrite existed dfuse Image.
         default: false
         type: boolean
+      ubuntu-version:
+        description: Specific the Ubuntu version.
+        default: '22.04'
+        type: string
 
 env:
   DOCKER_IMAGE: eu.gcr.io/dfuse-302310/dfuse-eosio
@@ -31,6 +35,7 @@ jobs:
       - name: Set Dfuse Version
         run: |
           echo "DFUSE_TAG=${{ github.event.inputs.dfuse-eosio }}" >> $GITHUB_ENV
+          echo "UBUNTU_VERSION=${{ github.event.inputs.ubuntu-version }}" >> $GITHUB_ENV
 
       - name: Set Nodeos Version
         if: ${{ github.event.inputs.eosio != 'null' }}
@@ -85,11 +90,12 @@ jobs:
 
       # Only build dfuse image if not existed or overwrite is set
       - name: Build Dfuse Image Without Nodeos
-        if: ${{ steps.dfuse-check.outcome == 'failure' || github.event.inputs.overwrite-dfuse == 'true' }}
+        if: ${{  (steps.dfuse-check.outcome == 'failure' || github.event.inputs.overwrite-dfuse == 'true') }}
         run: |
           docker build -f dfuse.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
                 --build-arg VERSION=${{ env.DFUSE_TAG }} \
-                --build-arg COMMIT=${{ env.RELEASE_COMMIT }}
+                --build-arg COMMIT=${{ env.RELEASE_COMMIT }} \
+                --build-arg UBUNTU_VERSION=${{ env.UBUNTU_VERSION }}
           docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
       
       # Only build dfuse with nodeos if eosio is set and dfuse image are exist
