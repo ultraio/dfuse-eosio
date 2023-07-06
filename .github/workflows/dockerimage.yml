@@ -1,5 +1,5 @@
 name: Docker Image CI
-run-name: Build dfuse Image with tag '${{ github.event.inputs.dfuse }}' and nodeos tag '${{ github.event.inputs.eosio }}'
+run-name: Build image with dfuse '${{ github.event.inputs.dfuse }}' and eosio '${{ github.event.inputs.eosio }}'
 
 on:
   # Only allows triggering through the Github Workflow UI
@@ -60,21 +60,21 @@ jobs:
       #     file:  eosio-${{ env.EOSIO_TAG }}.deb
       #     token: '${{ secrets.DEVOPS_SECRET }}'
 
-      # # gcloud authorization
-      # - id: 'auth'
-      #   uses: 'google-github-actions/auth@v1'
-      #   with:
-      #     credentials_json: '${{ secrets.GCR_KEY }}'
+      # gcloud authorization
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCR_KEY }}'
 
-      # - name: Setup gcloud cli
-      #   uses: google-github-actions/setup-gcloud@v1
-      #   with:
-      #     project_id: dfuse-302310
+      - name: Setup gcloud cli
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: dfuse-302310
 
-      # # docker gcloud config
-      # - name: Docker config
-      #   run: |
-      #     gcloud auth configure-docker -q
+      # docker gcloud config
+      - name: Docker config
+        run: |
+          gcloud auth configure-docker -q
 
       # Check if dfuse image is existed. 0 = existed, others = not existed
       - name: Check Dfuse Image
