@@ -19,7 +19,7 @@ on:
         default: false
         type: boolean
       ubuntu-version:
-        description: Specific the Ubuntu version.
+        description: Specific Ubuntu version.
         default: '22.04'
         type: choice
         options:
