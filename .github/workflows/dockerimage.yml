@@ -21,7 +21,10 @@ on:
       ubuntu-version:
         description: Specific the Ubuntu version.
         default: '22.04'
-        type: string
+        type: choice
+        options:
+          - '22.04'
+          - '18.04'
 
 env:
   DOCKER_IMAGE: eu.gcr.io/dfuse-302310/dfuse-eosio
