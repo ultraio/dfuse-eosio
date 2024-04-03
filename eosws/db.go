@@ -120,7 +120,24 @@ func (db *TRXDB) GetTransactions(ctx context.Context, ids []string) (out []*pbco
 	return
 }
 
-func (db *TRXDB) ListTransactionsForBlockID(ctx context.Context, blockID string, startKey string, limit int) (*mdl.TransactionList, error) {
+// ultra-keisuke-kanao --- BLOCK-2123 eosws - runtime error: slice bounds out of range ---
+func (db *TRXDB) ListTransactionsForBlockID(ctx context.Context, blockID string, startKey string, limit int) (out *mdl.TransactionList, err error) {
+	defer func() {
+		recoveredErr := recover()
+		if recoveredErr == nil {
+			return
+		}
+
+		switch v := recoveredErr.(type) {
+		case error:
+			err = fmt.Errorf("%w", v)
+		case string, fmt.Stringer:
+			err = fmt.Errorf("%s", v)
+		default:
+			err = fmt.Errorf("%v", v)
+		}
+	}()
+
 	if limit < 1 {
 		return &mdl.TransactionList{
 			Cursor: opaqueCursor(startKey),
