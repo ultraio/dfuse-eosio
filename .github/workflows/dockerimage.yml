@@ -27,7 +27,7 @@ on:
           - '18.04'
 
 env:
-  DOCKER_IMAGE: eu.gcr.io/dfuse-302310/dfuse-eosio
+  DOCKER_IMAGE: europe-west1-docker.pkg.dev/ultra-registry/docker/dfuse-eosio
 
 jobs:
   build:
@@ -69,20 +69,35 @@ jobs:
           token: '${{ secrets.DEVOPS_SECRET }}'
 
       # gcloud authorization
+#      - id: 'auth'
+#        uses: 'google-github-actions/auth@v1'
+#        with:
+#          credentials_json: '${{ secrets.GCR_KEY }}'
+#
       - id: 'auth'
+        name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v1'
         with:
-          credentials_json: '${{ secrets.GCR_KEY }}'
-
+            token_format: 'access_token'
+            workload_identity_provider: '${{ secrets.REG_WIF }}'
+            service_account: 'wif-gar@ultra-registry.iam.gserviceaccount.com'
+          
       - name: Setup gcloud cli
         uses: google-github-actions/setup-gcloud@v1
         with:
-          project_id: dfuse-302310
+          project_id: ultra-registry
 
-      # docker gcloud config
-      - name: Docker config
-        run: |
-          gcloud auth configure-docker -q
+      - name: 'Login to GAR'
+        uses: docker/login-action@v2
+        with:
+          registry: europe-west1-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+#      # docker gcloud config
+#      - name: Docker config
+#        run: |
+#          gcloud auth configure-docker europe-west1-docker.pkg.dev -q
 
       # Check if dfuse image is existed. Failed if not existed
       - name: Check Dfuse Image
