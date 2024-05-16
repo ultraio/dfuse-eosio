@@ -34,6 +34,10 @@ jobs:
     name: Build and Push image
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     steps:
       - name: Set Dfuse Version
         run: |
@@ -78,9 +82,9 @@ jobs:
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v1'
         with:
-            token_format: 'access_token'
-            workload_identity_provider: '${{ secrets.REG_WIF }}'
-            service_account: 'wif-gar@ultra-registry.iam.gserviceaccount.com'
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.REG_WIF }}'
+          service_account: 'wif-gar@ultra-registry.iam.gserviceaccount.com'
           
       - name: Setup gcloud cli
         uses: google-github-actions/setup-gcloud@v1
