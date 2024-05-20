@@ -15,10 +15,10 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
-	"fmt"
 
 	"github.com/dfuse-io/dfuse-eosio/eosws"
 	"github.com/dfuse-io/dfuse-eosio/eosws/mdl"
@@ -172,15 +172,15 @@ func GetBlockTransactionsHandler(db eosws.DB) http.Handler {
 			if recoveredErr == nil {
 				return
 			}
-            var errMsg string = "unknown error2"
-            switch v := recoveredErr.(type) {
-            case string:
-                errMsg = v
-            case error:
-                errMsg = v.Error()
-            default:
-                errMsg = fmt.Sprintf("%v", v)
-            }
+			var errMsg string = "unknown error2"
+			switch v := recoveredErr.(type) {
+			case string:
+				errMsg = v
+			case error:
+				errMsg = v.Error()
+			default:
+				errMsg = fmt.Sprintf("%v", v)
+			}
 			eosws.WriteError(w, r, derr.HTTPInternalServerError(ctx, nil, derr.ErrorCode("unexpected_error"), "An unexpected error occurred.", errMsg))
 			//////////////////////////////////////////////////////////////////////
 			// Billable event on REST API endpoint

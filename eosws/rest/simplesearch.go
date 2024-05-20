@@ -15,12 +15,12 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
-	"fmt"
 
 	"github.com/araddon/dateparse"
 	"github.com/dfuse-io/dfuse-eosio/eosws"
@@ -41,15 +41,15 @@ func SimpleSearchHandler(db eosws.DB, blockmetaClient *pbblockmeta.Client) http.
 			if recoveredErr == nil {
 				return
 			}
-            var errMsg string = "unknown error1"
-            switch v := recoveredErr.(type) {
-            case string:
-                errMsg = v
-            case error:
-                errMsg = v.Error()
-            default:
-                errMsg = fmt.Sprintf("%v", v)
-            }
+			var errMsg string = "unknown error1"
+			switch v := recoveredErr.(type) {
+			case string:
+				errMsg = v
+			case error:
+				errMsg = v.Error()
+			default:
+				errMsg = fmt.Sprintf("%v", v)
+			}
 			eosws.WriteError(w, r, derr.HTTPInternalServerError(ctx, nil, derr.ErrorCode("unexpected_error"), "An unexpected error occurred.", errMsg))
 
 			//////////////////////////////////////////////////////////////////////
