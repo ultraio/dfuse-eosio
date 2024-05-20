@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"fmt"
 
 	"github.com/araddon/dateparse"
 	"github.com/dfuse-io/dfuse-eosio/eosws"
@@ -35,6 +36,37 @@ func SimpleSearchHandler(db eosws.DB, blockmetaClient *pbblockmeta.Client) http.
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		query := r.FormValue("q")
+		defer func() {
+			recoveredErr := recover()
+			if recoveredErr == nil {
+				return
+			}
+            var errMsg string = "unknown error1"
+            switch v := recoveredErr.(type) {
+            case string:
+                errMsg = v
+            case error:
+                errMsg = v.Error()
+            default:
+                errMsg = fmt.Sprintf("%v", v)
+            }
+			eosws.WriteError(w, r, derr.HTTPInternalServerError(ctx, nil, derr.ErrorCode("unexpected_error"), "An unexpected error occurred.", errMsg))
+
+			//////////////////////////////////////////////////////////////////////
+			// Billable event on REST API endpoint
+			// WARNING: Ingress / Egress bytess is taken care by the middleware
+			//////////////////////////////////////////////////////////////////////
+			dmetering.EmitWithContext(dmetering.Event{
+				Source:         "eosws",
+				Kind:           "REST API - eosq",
+				Method:         "/v0/simple_search",
+				RequestsCount:  1,
+				ResponsesCount: 1,
+			}, ctx)
+			//////////////////////////////////////////////////////////////////////
+			return
+		}()
+
 		if query == "" {
 			eosws.WriteError(w, r, derr.RequestValidationError(ctx, url.Values{"q": []string{"query parameter should not be empty"}}))
 			//////////////////////////////////////////////////////////////////////

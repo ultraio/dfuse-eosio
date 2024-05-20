@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"fmt"
 
 	"github.com/dfuse-io/dfuse-eosio/eosws"
 	"github.com/dfuse-io/dfuse-eosio/eosws/mdl"
@@ -166,6 +167,35 @@ func GetBlockHandler(db eosws.DB) http.Handler {
 func GetBlockTransactionsHandler(db eosws.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+		defer func() {
+			recoveredErr := recover()
+			if recoveredErr == nil {
+				return
+			}
+            var errMsg string = "unknown error2"
+            switch v := recoveredErr.(type) {
+            case string:
+                errMsg = v
+            case error:
+                errMsg = v.Error()
+            default:
+                errMsg = fmt.Sprintf("%v", v)
+            }
+			eosws.WriteError(w, r, derr.HTTPInternalServerError(ctx, nil, derr.ErrorCode("unexpected_error"), "An unexpected error occurred.", errMsg))
+			//////////////////////////////////////////////////////////////////////
+			// Billable event on REST API endpoint
+			// WARNING: Ingress / Egress bytess is taken care by the middleware
+			//////////////////////////////////////////////////////////////////////
+			dmetering.EmitWithContext(dmetering.Event{
+				Source:         "eosws",
+				Kind:           "REST API - eosq",
+				Method:         "/v0/blocks/{blockID}/transactions",
+				RequestsCount:  1,
+				ResponsesCount: 1,
+			}, ctx)
+			//////////////////////////////////////////////////////////////////////
+			return
+		}()
 
 		vars := mux.Vars(r)
 		id := vars["blockID"]
@@ -194,7 +224,7 @@ func GetBlockTransactionsHandler(db eosws.DB) http.Handler {
 
 		dbTransactionList, err := db.ListTransactionsForBlockID(r.Context(), id, cursor, limit)
 		if err != nil {
-			eosws.WriteError(w, r, derr.Wrap(err, "failed to get block transactions"))
+			eosws.WriteError(w, r, derr.HTTPInternalServerError(ctx, nil, derr.ErrorCode("unexpected_error"), "failed to get block transactions"))
 			return
 		}
 
