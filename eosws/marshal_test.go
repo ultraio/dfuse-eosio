@@ -1,16 +1,16 @@
 package eosws
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/dfuse-io/dfuse-eosio/eosws/wsmsg"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestMarshalOutgoingMessager is a code snippet extracted from eosws.(*WSConn).Emit() function.
-// Here, SetReqID() is called to set an invalid string, because another function for OutgoingMessager interface, SetType() is called 
+// Here, SetReqID() is called to set an invalid string, because another function for OutgoingMessager interface, SetType() is called
 // and the result is validated in Emit().
 func TestMarshalOutgoingMessager(t *testing.T) {
 	var err error
