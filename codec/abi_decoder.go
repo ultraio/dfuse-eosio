@@ -596,7 +596,7 @@ type InjectDataWrite struct {
 	InjectData
 }
 
-//ultra-andrey-bezrukov --- BLOCK-178 Dfuse cannot produce JSON data for migration
+// ultra-andrey-bezrukov --- BLOCK-178 Dfuse cannot produce JSON data for migration
 func DecodeTableInject(data []byte, abi *eos.ABI) ([]byte, error) {
 	dataRd := InjectDataRead{}
 	err := json.Unmarshal(data, &dataRd)
