@@ -307,6 +307,21 @@ func (ws *WSConn) handleMessage(rawMsg []byte) {
 }
 
 func (ws *WSConn) Emit(ctx context.Context, msg wsmsg.OutgoingMessager) {
+	var err error
+	defer func() {
+		if r := recover(); r != nil {
+			switch v := r.(type) {
+			case error:
+				err = fmt.Errorf("unexpected error marshalling message: %w", v)
+			case string, fmt.Stringer:
+				err = fmt.Errorf("unexpected error marshalling message: %s", v)
+			default:
+				err = fmt.Errorf("unexpected error marshalling message: %v", v)
+			}
+			ws.Shutdown(err)
+		}
+	}()
+
 	zlogger := logging.Logger(ctx, zlog)
 
 	msgType, err := wsmsg.GetType(msg)
