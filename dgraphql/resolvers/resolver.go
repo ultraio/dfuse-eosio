@@ -68,6 +68,7 @@ type Root struct {
 	accounthistClients            *AccounthistClient
 	requestRateLimiter            rateLimiter.RateLimiter
 	requestRateLimiterLastLogTime time.Time
+	processedTrxCache             *TrxCache //ultra-duncan --- BLOCK-2245 prevent duplication when query
 }
 
 func NewRoot(
@@ -89,6 +90,7 @@ func NewRoot(
 		abiCodecClient:     abiCodecClient,
 		requestRateLimiter: requestRateLimiter,
 		accounthistClients: accounthistClients,
+		processedTrxCache:  NewTrxCache(1000000), //ultra-duncan --- BLOCK-2245 prevent duplication when query --- Initialize how many cache should be keep track
 	}, nil
 }
 
@@ -249,6 +251,13 @@ func (r *Root) querySearchTransactionsBoth(ctx context.Context, forward bool, ar
 			return nil, dgraphql.UnwrapError(ctx, err)
 		}
 
+		//ultra-duncan --- BLOCK-2245 prevent duplication when query
+		//Skip if transaction already been processed only applied forward
+		if forward && r.processedTrxCache.Exists(match.TrxIdPrefix) {
+			zlogger.Debug("skipping duplicate transaction", zap.String("trx_id", match.TrxIdPrefix))
+			continue
+		}
+
 		eosMatch, err := searchSpecificMatchToEOSMatch(match)
 		if err != nil {
 			return nil, err
@@ -310,6 +319,9 @@ func (r *Root) querySearchTransactionsBoth(ctx context.Context, forward bool, ar
 
 		zlogger.Debug("sending message", zap.String("trx_id", match.TrxIdPrefix))
 		res = append(res, out)
+		//ultra-duncan --- BLOCK-2245 prevent duplication when query
+		//Saved proccessed transaction
+		r.processedTrxCache.Put(match.TrxIdPrefix, true)
 	}
 
 	return res, nil
