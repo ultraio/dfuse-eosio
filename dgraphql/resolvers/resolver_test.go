@@ -59,7 +59,10 @@ func newSearchMatchArchive(trxID string) *pbsearch.SearchMatch {
 func newSearchMatchLive(trxID string, idx int) *pbsearch.SearchMatch {
 	cs, err := ptypes.MarshalAny(&pbsearcheos.Match{
 		Block: &pbsearcheos.BlockTrxPayload{
-			Trace: &pbcodec.TransactionTrace{Index: uint64(idx)},
+			Trace: &pbcodec.TransactionTrace{
+				Id:    trxID,
+				Index: uint64(idx),
+			},
 		},
 	})
 	if err != nil {
@@ -82,6 +85,19 @@ func newDgraphqlResponse(trxID string, idx int) *SearchTransactionForwardRespons
 		},
 	}
 }
+
+func newLiveDgraphqlResponse(trxID string, idx int) *SearchTransactionForwardResponse {
+	return &SearchTransactionForwardResponse{
+		SearchTransactionBackwardResponse: SearchTransactionBackwardResponse{
+			trxIDPrefix: trxID,
+			trxTrace: &pbcodec.TransactionTrace{
+				Index: uint64(idx),
+				Id:    trxID,
+			},
+		},
+	}
+}
+
 func TestSubscriptionSearchForward(t *testing.T) {
 	ctx := dtracing.NewFixedTraceIDInContext(context.Background(), "00000000000000000000000000000000")
 
@@ -142,9 +158,9 @@ func TestSubscriptionSearchForward(t *testing.T) {
 				newDgraphqlResponse("trx001", 6),
 				newDgraphqlResponse("trx002", 7),
 				newDgraphqlResponse("trx022", 11),
-				newDgraphqlResponse("trx003", 8),
-				newDgraphqlResponse("trx004", 9),
-				newDgraphqlResponse("trx005", 10),
+				newLiveDgraphqlResponse("trx003", 8),
+				newLiveDgraphqlResponse("trx004", 9),
+				newLiveDgraphqlResponse("trx005", 10),
 			},
 
 			expectError: nil,
@@ -161,6 +177,67 @@ func TestSubscriptionSearchForward(t *testing.T) {
 
 			res, err := root.streamSearchTracesBoth(true, ctx, StreamSearchArgs{})
 			if test.expectError != nil {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				var expect []*SearchTransactionForwardResponse
+				for el := range res {
+					expect = append(expect, el)
+				}
+
+				assert.Equal(t, test.expect, expect)
+			}
+		})
+	}
+}
+
+func TestSubscriptionSearchForwardDuplication(t *testing.T) {
+	ctx := dtracing.NewFixedTraceIDInContext(context.Background(), "00000000000000000000000000000000")
+
+	tests := []struct {
+		name        string
+		fromRouter  []interface{}
+		fromDB      map[string][]*pbcodec.TransactionEvent
+		expect      []*SearchTransactionForwardResponse
+		expectError error
+	}{
+		{
+			name: "duplication",
+			fromRouter: []interface{}{
+				newSearchMatchLive("trx003", 8),
+				newSearchMatchLive("trx004", 9),
+				newSearchMatchLive("trx005", 10),
+				newSearchMatchLive("trx004", 9),
+				newSearchMatchLive("trx005", 10),
+			},
+			fromDB: nil,
+			expect: []*SearchTransactionForwardResponse{
+				newLiveDgraphqlResponse("trx003", 8),
+				newLiveDgraphqlResponse("trx004", 9),
+				newLiveDgraphqlResponse("trx005", 10),
+				{
+					err: dgraphql.Errorf(ctx, "Duplication Transaction error"),
+				},
+				{
+					err: dgraphql.Errorf(ctx, "Duplication Transaction error"),
+				},
+			},
+
+			expectError: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			root := &Root{
+				searchClient: pbsearch.NewTestRouterClient(test.fromRouter),
+			}
+
+			res, err := root.streamSearchTracesBoth(true, ctx, StreamSearchArgs{})
+
+			if test.expectError != nil {
+				t.Log(err)
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)

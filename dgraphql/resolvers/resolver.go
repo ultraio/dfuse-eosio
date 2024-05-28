@@ -68,7 +68,6 @@ type Root struct {
 	accounthistClients            *AccounthistClient
 	requestRateLimiter            rateLimiter.RateLimiter
 	requestRateLimiterLastLogTime time.Time
-	processedTrxCache             *TrxCache //ultra-duncan --- BLOCK-2245 prevent duplication when query
 }
 
 func NewRoot(
@@ -90,7 +89,6 @@ func NewRoot(
 		abiCodecClient:     abiCodecClient,
 		requestRateLimiter: requestRateLimiter,
 		accounthistClients: accounthistClients,
-		processedTrxCache:  NewTrxCache(1000000), //ultra-duncan --- BLOCK-2245 prevent duplication when query --- Initialize how many cache should be keep track
 	}, nil
 }
 
@@ -251,13 +249,6 @@ func (r *Root) querySearchTransactionsBoth(ctx context.Context, forward bool, ar
 			return nil, dgraphql.UnwrapError(ctx, err)
 		}
 
-		//ultra-duncan --- BLOCK-2245 prevent duplication when query
-		//Skip if transaction already been processed only applied forward
-		if forward && r.processedTrxCache.Exists(match.TrxIdPrefix) {
-			zlogger.Debug("skipping duplicate transaction", zap.String("trx_id", match.TrxIdPrefix))
-			continue
-		}
-
 		eosMatch, err := searchSpecificMatchToEOSMatch(match)
 		if err != nil {
 			return nil, err
@@ -319,9 +310,6 @@ func (r *Root) querySearchTransactionsBoth(ctx context.Context, forward bool, ar
 
 		zlogger.Debug("sending message", zap.String("trx_id", match.TrxIdPrefix))
 		res = append(res, out)
-		//ultra-duncan --- BLOCK-2245 prevent duplication when query
-		//Saved proccessed transaction
-		r.processedTrxCache.Put(match.TrxIdPrefix, true)
 	}
 
 	return res, nil
@@ -367,7 +355,7 @@ type matchOrError struct {
 	err   error
 }
 
-func processMatchOrError(ctx context.Context, m *matchOrError, rows [][]*pbcodec.TransactionEvent, rowMap map[string]int, abiCodecClient pbabicodec.DecoderClient) (*SearchTransactionForwardResponse, error) {
+func processMatchOrError(ctx context.Context, m *matchOrError, rows [][]*pbcodec.TransactionEvent, rowMap map[string]int, abiCodecClient pbabicodec.DecoderClient, processedTrxCache *TrxCache) (*SearchTransactionForwardResponse, error) {
 	zl := logging.Logger(ctx, zlog)
 	if m.err != nil {
 		return &SearchTransactionForwardResponse{
@@ -397,6 +385,18 @@ func processMatchOrError(ctx context.Context, m *matchOrError, rows [][]*pbcodec
 		out.blockID = eosMatch.Block.BlockID
 		out.blockHeader = eosMatch.Block.BlockHeader
 		out.trxTrace = eosMatch.Block.Trace
+
+		//ultra-duncan --- BLOCK-2245 prevent duplication when query
+		//Skip if transaction ID if already been streammed
+		if processedTrxCache.Exists(out.trxTrace.GetId()) {
+			zl.Error("skipping duplicated transaction", zap.String("trx_trace_id", out.trxTrace.GetId()))
+			return &SearchTransactionForwardResponse{
+				err: dgraphql.Errorf(ctx, "Duplication Transaction error"),
+			}, nil
+		}
+		//Saved proccessed transaction
+		processedTrxCache.Put(out.trxTrace.GetId(), true)
+
 		return out, nil
 	}
 
@@ -481,6 +481,9 @@ func (r *Root) streamSearchTracesBoth(forward bool, ctx context.Context, args St
 		return nil, dgraphql.Errorf(ctx, "internal server error: connection to live search failed")
 	}
 
+	//ultra-duncan --- BLOCK-2245 prevent duplication when query --- Initialize how many cache should be keep track
+	processedTrxCache := NewTrxCache(1000000)
+
 	//////////////////////////////////////////////////////////////////////
 	// Billable event on GraphQL Subscriptions
 	// WARNING : Here we only track inbound subscription init
@@ -547,7 +550,7 @@ func (r *Root) streamSearchTracesBoth(forward bool, ctx context.Context, args St
 		var out []interface{}
 		for _, v := range batch {
 			m := v.(*matchOrError)
-			resp, err := processMatchOrError(ctx, m, rows, rowToIndex, r.abiCodecClient)
+			resp, err := processMatchOrError(ctx, m, rows, rowToIndex, r.abiCodecClient, processedTrxCache)
 			if err != nil {
 				return out, err
 			}
