@@ -355,7 +355,7 @@ type matchOrError struct {
 	err   error
 }
 
-func processMatchOrError(ctx context.Context, m *matchOrError, rows [][]*pbcodec.TransactionEvent, rowMap map[string]int, abiCodecClient pbabicodec.DecoderClient) (*SearchTransactionForwardResponse, error) {
+func processMatchOrError(ctx context.Context, m *matchOrError, rows [][]*pbcodec.TransactionEvent, rowMap map[string]int, abiCodecClient pbabicodec.DecoderClient, processedTrxCache *TrxCache) (*SearchTransactionForwardResponse, error) {
 	zl := logging.Logger(ctx, zlog)
 	if m.err != nil {
 		return &SearchTransactionForwardResponse{
@@ -385,6 +385,20 @@ func processMatchOrError(ctx context.Context, m *matchOrError, rows [][]*pbcodec
 		out.blockID = eosMatch.Block.BlockID
 		out.blockHeader = eosMatch.Block.BlockHeader
 		out.trxTrace = eosMatch.Block.Trace
+
+		//ultra-duncan --- BLOCK-2245 prevent duplication when query
+		if out.trxTrace != nil {
+			//Skip if transaction ID if already been streammed
+			if processedTrxCache.Exists(out.trxTrace.GetId()) {
+				zl.Error("skipping duplicated transaction", zap.String("trx_trace_id", out.trxTrace.GetId()))
+				return &SearchTransactionForwardResponse{
+					err: dgraphql.Errorf(ctx, "Duplication Transaction error"),
+				}, nil
+			}
+			//Saved proccessed transaction
+			processedTrxCache.Put(out.trxTrace.GetId())
+		}
+
 		return out, nil
 	}
 
@@ -469,6 +483,9 @@ func (r *Root) streamSearchTracesBoth(forward bool, ctx context.Context, args St
 		return nil, dgraphql.Errorf(ctx, "internal server error: connection to live search failed")
 	}
 
+	//ultra-duncan --- BLOCK-2245 prevent duplication when query --- Initialize how many cache should be keep track
+	processedTrxCache := NewTrxCache(100000)
+
 	//////////////////////////////////////////////////////////////////////
 	// Billable event on GraphQL Subscriptions
 	// WARNING : Here we only track inbound subscription init
@@ -535,7 +552,7 @@ func (r *Root) streamSearchTracesBoth(forward bool, ctx context.Context, args St
 		var out []interface{}
 		for _, v := range batch {
 			m := v.(*matchOrError)
-			resp, err := processMatchOrError(ctx, m, rows, rowToIndex, r.abiCodecClient)
+			resp, err := processMatchOrError(ctx, m, rows, rowToIndex, r.abiCodecClient, processedTrxCache)
 			if err != nil {
 				return out, err
 			}
