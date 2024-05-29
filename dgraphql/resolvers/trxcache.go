@@ -8,14 +8,14 @@ import (
 
 type TrxCache struct {
 	capacity int
-	data     map[string]interface{}
+	data     map[string]bool
 	order    *list.List
 }
 
 func NewTrxCache(capacity int) *TrxCache {
 	return &TrxCache{
 		capacity: capacity,
-		data:     make(map[string]interface{}),
+		data:     make(map[string]bool),
 		order:    list.New(),
 	}
 }
