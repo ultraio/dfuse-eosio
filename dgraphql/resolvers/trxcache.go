@@ -12,11 +12,6 @@ type TrxCache struct {
 	order    *list.List
 }
 
-type TrxEntry struct {
-	key   string
-	value interface{}
-}
-
 func NewTrxCache(capacity int) *TrxCache {
 	return &TrxCache{
 		capacity: capacity,
@@ -25,10 +20,10 @@ func NewTrxCache(capacity int) *TrxCache {
 	}
 }
 
-func (c *TrxCache) Put(key string, value interface{}) {
+func (c *TrxCache) Put(key string) {
 	if _, exists := c.data[key]; exists {
 		// If key already exists, update value and move it to the front
-		c.data[key] = value
+		c.data[key] = true
 		c.moveToFront(key)
 		return
 	}
@@ -39,8 +34,8 @@ func (c *TrxCache) Put(key string, value interface{}) {
 	}
 
 	// Add new entry to the map and the front of the list
-	c.data[key] = value
-	c.order.PushFront(TrxEntry{key, value})
+	c.data[key] = true
+	c.order.PushFront(key)
 }
 
 func (c *TrxCache) Get(key string) (interface{}, bool) {
@@ -62,14 +57,14 @@ func (c *TrxCache) evictOldest() {
 	oldest := c.order.Back()
 	if oldest != nil {
 		c.order.Remove(oldest)
-		delete(c.data, oldest.Value.(TrxEntry).key)
+		delete(c.data, oldest.Value.(string))
 	}
 }
 
 func (c *TrxCache) moveToFront(key string) {
 	// Move accessed or updated key to the front of the list
 	for e := c.order.Front(); e != nil; e = e.Next() {
-		if e.Value.(TrxEntry).key == key {
+		if e.Value.(string) == key {
 			c.order.MoveToFront(e)
 			break
 		}

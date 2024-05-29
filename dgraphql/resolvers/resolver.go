@@ -396,7 +396,7 @@ func processMatchOrError(ctx context.Context, m *matchOrError, rows [][]*pbcodec
 				}, nil
 			}
 			//Saved proccessed transaction
-			processedTrxCache.Put(out.trxTrace.GetId(), true)
+			processedTrxCache.Put(out.trxTrace.GetId())
 		}
 
 		return out, nil
@@ -484,7 +484,7 @@ func (r *Root) streamSearchTracesBoth(forward bool, ctx context.Context, args St
 	}
 
 	//ultra-duncan --- BLOCK-2245 prevent duplication when query --- Initialize how many cache should be keep track
-	processedTrxCache := NewTrxCache(1000000)
+	processedTrxCache := NewTrxCache(100000)
 
 	//////////////////////////////////////////////////////////////////////
 	// Billable event on GraphQL Subscriptions
