@@ -446,20 +446,6 @@ func processMatchOrError(ctx context.Context, m *matchOrError, rows [][]*pbcodec
 	out.blockHeader = lifecycle.ExecutionBlockHeader
 	out.blockID = lifecycle.ExecutionTrace.ProducerBlockId
 	out.trxTrace = lifecycle.ExecutionTrace
-
-	//ultra-duncan --- BLOCK-2245 prevent duplication when query
-	if out.trxTrace != nil {
-		//Skip if transaction ID if already been streammed
-		if processedTrxCache.Exists(out.trxTrace.GetId()) {
-			zl.Error("skipping duplicated transaction", zap.String("trx_trace_id", out.trxTrace.GetId()))
-			return &SearchTransactionForwardResponse{
-				err: dgraphql.Errorf(ctx, "Duplication Transaction error"),
-			}, nil
-		}
-		//Saved proccessed transaction
-		processedTrxCache.Put(out.trxTrace.GetId(), true)
-	}
-
 	return out, nil
 }
 
