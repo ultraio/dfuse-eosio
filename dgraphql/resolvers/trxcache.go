@@ -4,23 +4,28 @@ package resolvers
 
 import (
 	"container/list"
+	"sync"
 )
 
 type TrxCache struct {
 	capacity int
 	data     map[string]*list.Element
-	order    list.List
+	order    *list.List
+	mu       sync.RWMutex
 }
 
 func NewTrxCache(capacity int) *TrxCache {
 	return &TrxCache{
 		capacity: capacity,
 		data:     make(map[string]*list.Element),
-		order:    *list.New(),
+		order:    list.New(),
 	}
 }
 
 func (c *TrxCache) Put(key string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if ele, exists := c.data[key]; exists {
 		// If key already exists, move it to the front
 		c.order.MoveToFront(ele)
@@ -38,6 +43,9 @@ func (c *TrxCache) Put(key string) {
 }
 
 func (c *TrxCache) Exists(key string) bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
 	_, exists := c.data[key]
 	return exists
 }
