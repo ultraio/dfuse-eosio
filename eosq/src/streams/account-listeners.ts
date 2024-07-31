@@ -101,8 +101,10 @@ export async function registerAccountDetailsListeners(
           requestAccountLinkedPermissions(accountName, blockNum),
 //          requestContractTableRows(rexParams),
 //          requestContractTableRows(rexfundsParams),
-          requestContractTableRows(cpuLoans),
-          requestContractTableRows(netLoans)
+            // ultra-keisuke --- BLOCK-1685 --- examine and fix some code in eosq block explorer
+            // commmented out below two lines, because the below handling of them had already been commented out.
+//          requestContractTableRows(cpuLoans),
+//          requestContractTableRows(netLoans)
         ])
           .then((response: any) => {
             if (response && response.length >= 2) {

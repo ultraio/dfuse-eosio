@@ -69,7 +69,8 @@ export class AccountDetail extends ContentLoaderComponent<Props, State> {
     )
 
     this.voteStream = streams.voteStream
-    this.accountStream = streams.voteStream
+    // ultra-keisuke --- BLOCK-1685 --- examine and fix some code in eosq block explorer
+    this.accountStream = streams.accountStream
   }
 
   unregisterStreams = async () => {
