@@ -96,6 +96,11 @@ func (t *tokenizer) tokenizeData(data string) map[string]interface{} {
 				continue
 			}
 
+			/* ultra-duncan --- BLOCK-2253 tokenize nft data field*/
+			if converted, err := tokenizeNFTDataField(normalizedField, normalizedValue); err == nil {
+				normalizedValue = converted
+			}
+
 			out[normalizedField] = normalizedValue
 		}
 	}
