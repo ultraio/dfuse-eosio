@@ -54,7 +54,7 @@ func (t *tokenizer) tokenize(actTrace *pbcodec.ActionTrace) (out map[string]inte
 	}
 
 	if len(t.indexedTerms.Data) > 0 {
-		tokens := t.tokenizeData(actTrace.Action.JsonData)
+		tokens := t.tokenizeData(actTrace.Action.JsonData, actTrace.Account())
 		if len(tokens) > 0 {
 			out["data"] = tokens
 		}
@@ -77,7 +77,7 @@ func (t *tokenizer) tokenizeAuthority(authorizations []*pbcodec.PermissionLevel)
 	return
 }
 
-func (t *tokenizer) tokenizeData(data string) map[string]interface{} {
+func (t *tokenizer) tokenizeData(data string, account string) map[string]interface{} {
 	if data == "" {
 		return nil
 	}
@@ -94,6 +94,13 @@ func (t *tokenizer) tokenizeData(data string) map[string]interface{} {
 			normalizedValue, skipField := normalizeDataValue(normalizedField, dataFieldValue)
 			if skipField {
 				continue
+			}
+
+			/* ultra-duncan --- BLOCK-2253 tokenize nft data field*/
+			if account == "eosio.nft.ft" {
+				if converted, err := tokenizeNFTDataField(normalizedField, normalizedValue); err == nil {
+					normalizedValue = converted
+				}
 			}
 
 			out[normalizedField] = normalizedValue
