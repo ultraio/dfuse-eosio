@@ -98,7 +98,8 @@ func (t *tokenizer) tokenizeData(data string, account string) map[string]interfa
 
 			/* ultra-duncan --- BLOCK-2253 tokenize nft data field*/
 			if account == "eosio.nft.ft" {
-				if converted, err := tokenizeNFTDataField(normalizedField, normalizedValue); err == nil {
+				converted, err := tokenizeNFTDataField(normalizedField, normalizedValue)
+				if converted != nil && err == nil {
 					normalizedValue = converted
 				}
 			}
