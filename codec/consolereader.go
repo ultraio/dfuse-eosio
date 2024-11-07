@@ -217,6 +217,14 @@ func (l *ConsoleReader) Read() (out interface{}, err error) {
 		case strings.HasPrefix(line, "DTRX_OP FAILED"):
 			err = ctx.readFailedDTrxOp(line)
 
+		case strings.HasPrefix(line, "ACCEPTED_BLOCK_V2"):
+			block, err := ctx.readAcceptedBlockV2(line)
+			if err != nil {
+				return nil, l.formatError(line, err)
+			}
+
+			return block, nil
+
 		case strings.HasPrefix(line, "ACCEPTED_BLOCK"):
 			block, err := ctx.readAcceptedBlock(line)
 			if err != nil {
@@ -482,6 +490,46 @@ func (ctx *parseCtx) readAcceptedBlock(line string) (*pbcodec.Block, error) {
 	}
 
 	blockStateHex, err := hex.DecodeString(chunks[2])
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode block %d state hex: %w", blockNum, err)
+	}
+
+	if err := ctx.hydrator.HydrateBlock(ctx.block, blockStateHex); err != nil {
+		return nil, fmt.Errorf("hydrate block %d: %w", blockNum, err)
+	}
+
+	block := ctx.block
+
+	zlog.Debug("blocking until abi decoder has decoded every transaction pushed to it")
+	err = ctx.abiDecoder.endBlock(ctx.block)
+	if err != nil {
+		return nil, fmt.Errorf("abi decoding post-process failed: %w", err)
+	}
+
+	zlog.Debug("abi decoder terminated all decoding operations, resetting block")
+	ctx.resetBlock()
+	return block, nil
+}
+
+// Line format:
+//
+//	ACCEPTED_BLOCK_V2 ${id} ${block_num} ${lib} ${block_state_hex}
+func (ctx *parseCtx) readAcceptedBlockV2(line string) (*pbcodec.Block, error) {
+	chunks := strings.SplitN(line, " ", 8)
+	if len(chunks) != 8 {
+		return nil, fmt.Errorf("expected 8 fields, got %d", len(chunks))
+	}
+
+	blockNum, err := strconv.ParseInt(chunks[2], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("block_num not a valid string, got: %q", chunks[2])
+	}
+
+	if ctx.activeBlockNum != blockNum {
+		return nil, fmt.Errorf("block_num %d doesn't match the active block num (%d)", blockNum, ctx.activeBlockNum)
+	}
+
+	blockStateHex, err := hex.DecodeString(chunks[4])
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode block %d state hex: %w", blockNum, err)
 	}
