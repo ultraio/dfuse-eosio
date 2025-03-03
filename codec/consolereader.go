@@ -34,8 +34,8 @@ import (
 	"go.uber.org/zap"
 )
 
-var supportedVersions = []uint64{12, 13, 14}
-var supportedVersionStrings = []string{"12", "13", "14"}
+var supportedVersions = []uint64{12, 13}
+var supportedVersionStrings = []string{"12", "13"}
 
 type ConsoleReaderOption interface {
 	apply(reader *ConsoleReader)
