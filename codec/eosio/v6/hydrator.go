@@ -85,7 +85,81 @@ func (h *Hydrator) HydrateBlock(block *pbcodec.Block, input []byte) error {
 }
 
 func (h *Hydrator) HydrateBlockV2(block *pbcodec.Block, input []byte, blockId string, blockNumber uint32, libNum uint32, finalityDataInput []byte, proposerPolicyInput []byte) error {
-	return h.HydrateBlock(block, input)
+	h.logger.Debug("hydrating block from bytes")
+
+	// signed block
+	signedBlock := &SignedBlock{}
+	err := unmarshalBinary(input, signedBlock)
+	if err != nil {
+		return fmt.Errorf("unmarshalling binary signed block (6.x.x): %w", err)
+	}
+
+	// finality data
+	finalityData := &FinalityData{}
+	err = unmarshalBinary(finalityDataInput, finalityData)
+	if err != nil {
+		return fmt.Errorf("unmarshalling binary finality data (6.x.x): %w", err)
+	}
+
+	// proposer policy including active producer schedule
+	proposerPolicy := &ProposerPolicy{}
+	err = unmarshalBinary(proposerPolicyInput, proposerPolicy)
+	if err != nil {
+		return fmt.Errorf("unmarshalling binary proposer policy (6.x.x): %w", err)
+	}
+
+	block.Id = blockId
+	block.Number = blockNumber
+	// Version 1: Added the total counts (ExecutedInputActionCount, ExecutedTotalActionCount,
+	// TransactionCount, TransactionTraceCount)
+	block.Version = 1
+	block.Header = eosio.BlockHeaderToDEOS(&signedBlock.BlockHeader)
+	block.BlockExtensions = eosio.ExtensionsToDEOS(signedBlock.BlockExtensions)
+	block.DposIrreversibleBlocknum = libNum
+	// block.DposProposedIrreversibleBlocknum = blockState.DPoSProposedIrreversibleBlockNum
+	// block.Validated = blockState.Validated
+	// block.BlockrootMerkle = eosio.BlockrootMerkleToDEOS(blockState.BlockrootMerkle)
+	// block.ProducerToLastProduced = eosio.ProducerToLastProducedToDEOS(blockState.ProducerToLastProduced)
+	// block.ProducerToLastImpliedIrb = eosio.ProducerToLastImpliedIrbToDEOS(blockState.ProducerToLastImpliedIRB)
+	// block.ActivatedProtocolFeatures = eosio.ActivatedProtocolFeaturesToDEOS(blockState.ActivatedProtocolFeatures)
+	block.ProducerSignature = signedBlock.ProducerSignature.String()
+
+	// block.ConfirmCount = make([]uint32, len(blockState.ConfirmCount))
+	// for i, count := range blockState.ConfirmCount {
+	// 	block.ConfirmCount[i] = uint32(count)
+	// }
+
+	// if blockState.PendingSchedule != nil {
+	// 	block.PendingSchedule = eosio.PendingScheduleToDEOS(blockState.PendingSchedule)
+	// }
+
+	// block.ValidBlockSigningAuthorityV2 = eosio.BlockSigningAuthorityToDEOS(blockState.ValidBlockSigningAuthorityV2)
+	block.ActiveScheduleV2 = eosio.ProducerAuthorityScheduleToDEOS(proposerPolicy.ProposerSchedule)
+
+	block.UnfilteredTransactionCount = uint32(len(signedBlock.Transactions))
+	for idx, transaction := range signedBlock.Transactions {
+		deosTransaction := TransactionReceiptToDEOS(transaction)
+		deosTransaction.Index = uint64(idx)
+
+		block.UnfilteredTransactions = append(block.UnfilteredTransactions, deosTransaction)
+	}
+
+	block.UnfilteredTransactionTraceCount = uint32(len(block.UnfilteredTransactionTraces))
+	for idx, t := range block.UnfilteredTransactionTraces {
+		t.Index = uint64(idx)
+		t.BlockTime = block.Header.Timestamp
+		t.ProducerBlockId = block.Id
+		t.BlockNum = uint64(block.Number)
+
+		for _, actionTrace := range t.ActionTraces {
+			block.UnfilteredExecutedTotalActionCount++
+			if actionTrace.IsInput() {
+				block.UnfilteredExecutedInputActionCount++
+			}
+		}
+	}
+
+	return nil
 }
 
 func (h *Hydrator) DecodeTransactionTrace(input []byte, opts ...eosio.ConversionOption) (*pbcodec.TransactionTrace, error) {
