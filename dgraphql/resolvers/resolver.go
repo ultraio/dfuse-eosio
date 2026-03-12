@@ -848,8 +848,16 @@ func newBlockRootMerkle(merkleRoot *pbcodec.BlockRootMerkle) BlockRootMerkle {
 	}
 }
 
-func (b BlockRootMerkle) NodeCount() commonTypes.Uint32 { return commonTypes.Uint32(b.m.NodeCount) }
+func (b BlockRootMerkle) NodeCount() commonTypes.Uint32 {
+	if b.m == nil {
+		return 0
+	}
+	return commonTypes.Uint32(b.m.NodeCount)
+}
 func (b BlockRootMerkle) ActiveNodes() (out []string) {
+	if b.m == nil {
+		return nil
+	}
 	out = make([]string, len(b.m.ActiveNodes))
 	for i, n := range b.m.ActiveNodes {
 		out[i] = hex.EncodeToString(n)

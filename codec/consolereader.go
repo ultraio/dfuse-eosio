@@ -553,7 +553,12 @@ func (ctx *parseCtx) readAcceptedBlockV2(line string) (*pbcodec.Block, error) {
 		return nil, fmt.Errorf("unable to decode proposer policy %d state hex: %w", blockNum, err)
 	}
 
-	if err := ctx.hydrator.HydrateBlockV2(ctx.block, blockStateHex, blockId, uint32(blockNum), uint32(numLib), finalityDataHex, proposerPolicyHex); err != nil {
+	finalizerPolicyHex, err := hex.DecodeString(chunks[7])
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode finalizer policy %d state hex: %w", blockNum, err)
+	}
+
+	if err := ctx.hydrator.HydrateBlockV2(ctx.block, blockStateHex, blockId, uint32(blockNum), uint32(numLib), finalityDataHex, proposerPolicyHex, finalizerPolicyHex); err != nil {
 		return nil, fmt.Errorf("hydrate block %d: %w", blockNum, err)
 	}
 
@@ -1142,7 +1147,7 @@ func (ctx *parseCtx) readDeepmindVersion(line string) (majorVersion uint64, mino
 
 		majorVersion, err = strconv.ParseUint(chunks[2], 10, 64)
 		if err != nil {
-			return majorVersion, minorVersion, nil, fmt.Errorf("invalid major version %q: %w", chunks[1], err)
+			return majorVersion, minorVersion, nil, fmt.Errorf("invalid major version %q: %w", chunks[2], err)
 		}
 	}
 

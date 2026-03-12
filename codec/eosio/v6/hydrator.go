@@ -11,7 +11,7 @@ import (
 
 func NewHydrator(parentLogger *zap.Logger) *Hydrator {
 	return &Hydrator{
-		logger: parentLogger.With(zap.String("eosio", "2.1.x")),
+		logger: parentLogger.With(zap.String("eosio", "6.x.x")),
 	}
 }
 
@@ -84,7 +84,7 @@ func (h *Hydrator) HydrateBlock(block *pbcodec.Block, input []byte) error {
 	return nil
 }
 
-func (h *Hydrator) HydrateBlockV2(block *pbcodec.Block, input []byte, blockId string, blockNumber uint32, libNum uint32, finalityDataInput []byte, proposerPolicyInput []byte) error {
+func (h *Hydrator) HydrateBlockV2(block *pbcodec.Block, input []byte, blockId string, blockNumber uint32, libNum uint32, finalityDataInput []byte, proposerPolicyInput []byte, finalizerPolicyInput []byte) error {
 	h.logger.Debug("hydrating block from bytes")
 
 	// signed block
@@ -108,12 +108,30 @@ func (h *Hydrator) HydrateBlockV2(block *pbcodec.Block, input []byte, blockId st
 		return fmt.Errorf("unmarshalling binary proposer policy (6.x.x): %w", err)
 	}
 
+	// finalizer policy (BLS keys, weights, threshold)
+	if len(finalizerPolicyInput) > 0 {
+		finalizerPolicy := &FinalizerPolicyWithStringKey{}
+		err = unmarshalBinary(finalizerPolicyInput, finalizerPolicy)
+		if err != nil {
+			return fmt.Errorf("unmarshalling binary finalizer policy (6.x.x): %w", err)
+		}
+		// TODO: Store finalizer policy in proto block once proto fields are added.
+		h.logger.Debug("decoded finalizer policy",
+			zap.Uint32("generation", finalizerPolicy.Generation),
+			zap.Uint64("threshold", finalizerPolicy.Threshold),
+			zap.Int("finalizer_count", len(finalizerPolicy.Finalizers)),
+		)
+	}
+
 	block.Id = blockId
 	block.Number = blockNumber
 	// Version 1: Added the total counts (ExecutedInputActionCount, ExecutedTotalActionCount,
 	// TransactionCount, TransactionTraceCount)
 	block.Version = 1
 	block.Header = eosio.BlockHeaderToDEOS(&signedBlock.BlockHeader)
+	// In Savanna, the block header's action_mroot is repurposed to hold the finality digest.
+	// The real action merkle root is in FinalityData, so we overwrite it here.
+	block.Header.ActionMroot = finalityData.ActionMroot
 	block.BlockExtensions = eosio.ExtensionsToDEOS(signedBlock.BlockExtensions)
 	block.DposIrreversibleBlocknum = libNum
 	// block.DposProposedIrreversibleBlocknum = blockState.DPoSProposedIrreversibleBlockNum

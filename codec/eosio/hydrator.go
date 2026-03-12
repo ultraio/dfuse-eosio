@@ -9,7 +9,7 @@ type Hydrator interface {
 
 	// HydrateBlock decodes the received Deep Mind AcceptedBlock_V2 data structure against the
 	// correct struct for this version of EOSIO supported by this hydrator.
-	HydrateBlockV2(block *pbcodec.Block, input []byte, blockId string, blockNumber uint32, libNum uint32, finalityDataInput []byte, proposerPolicyInput []byte) error
+	HydrateBlockV2(block *pbcodec.Block, input []byte, blockId string, blockNumber uint32, libNum uint32, finalityDataInput []byte, proposerPolicyInput []byte, finalizerPolicyInput []byte) error
 
 	// DecodeTransactionTrace decodes the received Deep Mind AppliedTransaction data structure against the
 	// correct struct for this version of EOSIO supported by this hydrator.
