@@ -9,7 +9,7 @@ ARG UBUNTU_VERSION
 ADD ./.github/install_deps.sh /
 RUN ./install_deps.sh ${UBUNTU_VERSION}
 
-FROM node:18-bookworm AS dlauncher
+FROM node:16-bookworm AS dlauncher
 WORKDIR /work
 ADD go.mod /work
 RUN apt update && apt-get -y install git
@@ -20,7 +20,7 @@ RUN cd /work && git clone https://github.com/streamingfast/dlauncher.git dlaunch
     cd dashboard/client &&\
     yarn install --frozen-lockfile && yarn build
 
-FROM node:18-bookworm AS eosq
+FROM node:16-bookworm AS eosq
 ADD eosq /work
 WORKDIR /work
 RUN yarn install --frozen-lockfile && yarn build
