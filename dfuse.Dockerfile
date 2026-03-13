@@ -9,7 +9,7 @@ ARG UBUNTU_VERSION
 ADD ./.github/install_deps.sh /
 RUN ./install_deps.sh ${UBUNTU_VERSION}
 
-FROM node:14 AS dlauncher
+FROM node:16-bookworm AS dlauncher
 WORKDIR /work
 ADD go.mod /work
 RUN apt update && apt-get -y install git
@@ -20,12 +20,12 @@ RUN cd /work && git clone https://github.com/streamingfast/dlauncher.git dlaunch
     cd dashboard/client &&\
     yarn install --frozen-lockfile && yarn build
 
-FROM node:14 AS eosq
+FROM node:16-bookworm AS eosq
 ADD eosq /work
 WORKDIR /work
 RUN yarn install --frozen-lockfile && yarn build
 
-FROM golang:1.20 as dfuse
+FROM golang:1.20 AS dfuse
 ARG COMMIT
 ARG VERSION
 RUN mkdir -p /work/build
@@ -33,7 +33,7 @@ RUN mkdir -p /work/go/bin
 ADD . /work
 WORKDIR /work
 RUN cp /work/go.rice/rice /work/go/bin/rice
-ENV PATH="${PATH}:$HOME/bin:/work/go/bin"
+ENV PATH="${PATH}:/root/bin:/work/go/bin"
 RUN go install github.com/GeertJohan/go.rice/rice@latest
 COPY --from=eosq      /work/ /work/eosq
 # The copy needs to be one level higher than work, the dashboard generates expects this file layout

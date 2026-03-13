@@ -24,7 +24,6 @@ on:
         type: choice
         options:
           - '22.04'
-          - '18.04'
 
 env:
   DOCKER_IMAGE: europe-west1-docker.pkg.dev/ultra-registry/docker/dfuse-eosio
@@ -115,17 +114,21 @@ jobs:
         if: ${{  (steps.dfuse-check.outcome == 'failure' || github.event.inputs.overwrite-dfuse == 'true') }}
         run: |
           docker build -f dfuse.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
+                -t ${{ env.DOCKER_IMAGE }}:latest \
                 --build-arg VERSION=${{ env.DFUSE_TAG }} \
                 --build-arg COMMIT=${{ env.RELEASE_COMMIT }} \
                 --build-arg UBUNTU_VERSION=${{ env.UBUNTU_VERSION }}
           docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
+          docker push ${{ env.DOCKER_IMAGE }}:latest
       
       # Only build dfuse with nodeos if eosio is set and dfuse image are exist
       - name: Build Dfuse Image With Nodeos
         if: ${{ github.event.inputs.eosio != 'null' }}
         run: |
           docker build -f nodeos.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }} \
+                -t ${{ env.DOCKER_IMAGE }}:latest \
                 --build-arg DFUSE_IMAGE=${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
                 --build-arg DEB_PKG=eosio-${{ env.EOSIO_TAG }}.deb
           docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }}
+          docker push ${{ env.DOCKER_IMAGE }}:latest
           
