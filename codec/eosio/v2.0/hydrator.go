@@ -107,6 +107,10 @@ func (h *Hydrator) HydrateBlock(block *pbcodec.Block, input []byte) error {
 	return nil
 }
 
+func (h *Hydrator) HydrateBlockV2(block *pbcodec.Block, input []byte, blockId string, blockNumber uint32, libNum uint32, finalityDataInput []byte, proposerPolicyInput []byte, finalizerPolicyInput []byte) error {
+	return h.HydrateBlock(block, input)
+}
+
 func (h *Hydrator) DecodeTransactionTrace(input []byte, opts ...eosio.ConversionOption) (*pbcodec.TransactionTrace, error) {
 	trxTrace := &eos.TransactionTrace{}
 	if err := unmarshalBinary(input, trxTrace); err != nil {
