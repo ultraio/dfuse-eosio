@@ -3,7 +3,6 @@ ARG DEB_PKG=""
 
 FROM ${DFUSE_IMAGE}
 ARG DEB_PKG
-RUN mkdir -p /var/cache/apt/archives/
-ADD ${DEB_PKG} /var/cache/apt/archives/
-RUN dpkg -i /var/cache/apt/archives/${DEB_PKG}
-RUN rm -rf /var/cache/apt/*
+ADD ${DEB_PKG} /tmp/
+RUN apt-get update && dpkg -i /tmp/${DEB_PKG} || apt-get install -f -y
+RUN rm -f /tmp/${DEB_PKG} && rm -rf /var/cache/apt/*
