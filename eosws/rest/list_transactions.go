@@ -23,7 +23,7 @@ import (
 	"github.com/streamingfast/dmetering"
 )
 
-func ListTransactionsHandler(db eosws.DB) http.Handler {
+func ListTransactionsHandler(db eosws.DB, recentTx *eosws.RecentTxHub) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -47,6 +47,29 @@ func ListTransactionsHandler(db eosws.DB) http.Handler {
 
 		cursor, _ := parseCursor(r.FormValue("cursor"))
 		limit, _ := strconv.Atoi(r.FormValue("limit"))
+
+		// Fast path: when the client asks for the head of the list (no
+		// cursor) and the hub can satisfy the limit, serve from the
+		// in-memory ring buffer instead of doing a Bigtable reverse-scan.
+		// Falls through to Bigtable on warmup / undersized ring / cursor
+		// pagination — see RecentTxHub.Snapshot.
+		if cursor == "" && recentTx != nil {
+			if list, ok := recentTx.Snapshot(limit); ok {
+				eosws.WriteJSON(w, r, list)
+				count := int64(len(list.Transactions))
+				if count == 0 {
+					count = 1
+				}
+				dmetering.EmitWithContext(dmetering.Event{
+					Source:         "eosws",
+					Kind:           "REST API - eosq",
+					Method:         "/v0/transactions",
+					RequestsCount:  1,
+					ResponsesCount: count,
+				}, ctx)
+				return
+			}
+		}
 
 		dbTransactionList, err := db.ListMostRecentTransactions(r.Context(), cursor, limit)
 		if err != nil {
