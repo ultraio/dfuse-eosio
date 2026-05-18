@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -274,8 +273,8 @@ func TestRecentTxHub_ConcurrentReadWrite(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
 	defer cancel()
 
-	var produced atomic.Int64
-	var consumed atomic.Int64
+	produced := atom.NewInt64(0)
+	consumed := atom.NewInt64(0)
 
 	// One producer ~1 block / 2ms = 500/s.
 	var wg sync.WaitGroup
