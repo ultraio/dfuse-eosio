@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	eos "github.com/eoscanada/eos-go"
 	v1 "github.com/dfuse-io/eosws-go/mdl/v1"
+	eos "github.com/eoscanada/eos-go"
 	atom "go.uber.org/atomic"
 )
 
