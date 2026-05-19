@@ -38,6 +38,7 @@ func init() {
 			cmd.Flags().Bool("eosws-use-opencensus-stack-driver", false, "Enables stack driver tracing")
 			cmd.Flags().StringSlice("eosws-disabled-messages", []string{}, "List off WS message that need to be disabled")
 			cmd.Flags().Int("eosws-max-stream-per-connection", 12, "Maximum number of stream active at the same time to allow per connection")
+			cmd.Flags().Int("eosws-recent-tx-ring-size", 500, "Number of most-recent transactions to keep in RAM to short-circuit Bigtable on /v0/transactions?cursor=&limit=N; 0 disables the optimization")
 
 			return nil
 		},
@@ -81,6 +82,7 @@ func init() {
 				HealthzSecret:               viper.GetString("eosws-healthz-secret"),
 				MaxStreamCountPerConnection: viper.GetInt("eosws-max-stream-per-connection"),
 				ChainCoreSymbol:             viper.GetString("common-chain-core-symbol"),
+				RecentTxRingSize:            viper.GetInt("eosws-recent-tx-ring-size"),
 				DisabledWsMessage:           disabledWsMessages,
 			}, &eoswsApp.Modules{
 				BlockFilter: runtime.BlockFilter.TransformInPlace,

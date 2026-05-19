@@ -90,6 +90,12 @@ type Config struct {
 	BlocksBufferSize            int
 	RealtimeTolerance           time.Duration
 
+	// RecentTxRingSize is the capacity of the in-memory ring buffer that
+	// short-circuits Bigtable reverse-scans for the eosq home page
+	// /v0/transactions?cursor=&limit=N request. Zero disables the
+	// optimization entirely (Bigtable path serves every request, as before).
+	RecentTxRingSize int
+
 	DataIntegrityProofSecret string
 	HealthzSecret            string
 
@@ -130,6 +136,7 @@ func (a *App) Run() error {
 	zlog.Info("running eosws app", zap.Reflect("config", a.Config))
 
 	dmetrics.Register(metrics.Metricset)
+	dmetrics.Register(eosws.RecentTxMetricset())
 	meter, err := dmetering.New(a.Config.MeteringPlugin)
 	if err != nil {
 		return fmt.Errorf("metering setup: %w", err)
@@ -240,6 +247,44 @@ func (a *App) Run() error {
 	}
 	go subscriptionHub.Launch()
 	go tailManager.Launch()
+
+	// Allocate the recent-tx ring-buffer hub here (before any handler mount
+	// captures the pointer) but defer .Launch() until after subscriptionHub
+	// reaches head block (mirrors the headInfoHub launch ordering further
+	// down). Nil-out cleanly if ring is disabled or chain_id cannot be
+	// recovered, in which case the REST handler falls through to Bigtable.
+	var recentTxHub *eosws.RecentTxHub
+	if a.Config.RecentTxRingSize > 0 {
+		var chainInfo *eos.InfoResp
+		for attempt := 0; attempt < 10; attempt++ {
+			chainInfo, err = api.GetInfo(ctx)
+			if err == nil {
+				break
+			}
+			zlog.Warn("recent-tx hub: GetInfo failed, will retry",
+				zap.Int("attempt", attempt+1), zap.Error(err))
+			select {
+			case <-time.After(time.Second):
+			case <-a.Terminating():
+				return nil
+			}
+		}
+		if err != nil || chainInfo == nil {
+			zlog.Error("recent-tx hub: could not fetch chain_id from nodeos; skipping hub (Bigtable path remains live)",
+				zap.Error(err))
+		} else {
+			zlog.Info("preparing recent-tx ring buffer hub",
+				zap.Int("ring_size", a.Config.RecentTxRingSize),
+				zap.String("chain_id", chainInfo.ChainID.String()))
+			recentTxHub = eosws.NewRecentTxHub(
+				a.Config.RecentTxRingSize,
+				chainInfo.ChainID,
+				head.ID(),
+				lib.ID(),
+				subscriptionHub,
+			)
+		}
+	}
 
 	zlog.Info("connecting to statedb", zap.String("addr", a.Config.StateDBGRPCAddr))
 	stateConn, err := dgrpc.NewInternalClient(a.Config.StateDBGRPCAddr)
@@ -513,7 +558,7 @@ func (a *App) Run() error {
 		false, true))
 	//////////////////////////////////////////////////////////////////////
 
-	eosqRestRouter.Path("/v0/transactions").Handler(rest.ListTransactionsHandler(db))
+	eosqRestRouter.Path("/v0/transactions").Handler(rest.ListTransactionsHandler(db, recentTxHub))
 
 	eosqRestRouter.Path("/v0/blocks").Handler(rest.GetBlocksHandler(db))
 	eosqRestRouter.Path("/v0/blocks/{blockID}").Handler(rest.GetBlockHandler(db))
@@ -539,6 +584,9 @@ func (a *App) Run() error {
 		break
 	}
 	go headInfoHub.Launch(context.Background())
+	if recentTxHub != nil {
+		go recentTxHub.Launch(ctx)
+	}
 
 	if a.Config.WithCompletion {
 		completionInstance, err := completion.New(ctx, db)
