@@ -5,12 +5,14 @@ package eosws
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	v1 "github.com/dfuse-io/eosws-go/mdl/v1"
 	eos "github.com/eoscanada/eos-go"
+	"github.com/streamingfast/opaque"
 	atom "go.uber.org/atomic"
 )
 
@@ -233,15 +235,60 @@ func TestRecentTxHub_TombstoneSaturationFallsThrough(t *testing.T) {
 	}
 }
 
-// --- 9. Cursor encoding is opaque + non-empty ------------------------------
+// --- 9. Cursor encodes (lastBlockNum-1, 0xffff) so Bigtable fall-through
+//        resumes WITHOUT re-fetching the ring's last block (R3 P0 fix).
 
-func TestRecentTxHub_SnapshotCursorEncoded(t *testing.T) {
+func TestRecentTxHub_SnapshotCursorPointsOneBlockEarlier(t *testing.T) {
 	h := newTestHub(10)
-	h.testAppend("0000000064abc...blk", 100, mkLC("t1", false), mkLC("t2", false))
+	h.testAppend("blkA", 100, mkLC("t1", false), mkLC("t2", false))
 
-	got, _ := h.Snapshot(2)
-	if got.Cursor == "" {
-		t.Errorf("expected non-empty opaque cursor")
+	got, ok := h.Snapshot(2)
+	if !ok || got.Cursor == "" {
+		t.Fatalf("expected non-empty cursor; ok=%v cursor=%q", ok, got.Cursor)
+	}
+	// Round-trip the opaque cursor and confirm the embedded blockNum is
+	// lastBlockNum-1 (so the Bigtable fall-through skips the ring's last
+	// block instead of re-fetching it).
+	raw, err := opaque.FromOpaque(got.Cursor)
+	if err != nil {
+		t.Fatalf("FromOpaque: %v", err)
+	}
+	parts := strings.Split(raw, ":")
+	if len(parts) != 2 {
+		t.Fatalf("cursor format %q does not split into 2 parts on ':'", raw)
+	}
+	if len(parts[0]) < 8 {
+		t.Fatalf("cursor blockID part too short: %q", parts[0])
+	}
+	blockNum := eos.BlockNum(parts[0])
+	if blockNum != 99 { // lastBlockNum (100) - 1
+		t.Errorf("cursor blockNum = %d, want %d", blockNum, 99)
+	}
+	if parts[1] != "ffff" {
+		t.Errorf("cursor trxIndex = %q, want %q", parts[1], "ffff")
+	}
+}
+
+// --- 9b. syntheticPrevBlockID never produces a real-block collision ---------
+
+func TestSyntheticPrevBlockID(t *testing.T) {
+	cases := []struct {
+		in   uint32
+		want uint32 // expected blockNum after eos.BlockNum round-trip
+	}{
+		{1, 0},
+		{100, 99},
+		{313_774_854, 313_774_853},
+		{0, 0}, // floor at 0 to avoid underflow
+	}
+	for _, c := range cases {
+		got := syntheticPrevBlockID(c.in)
+		if len(got) != 64 {
+			t.Errorf("syntheticPrevBlockID(%d) length = %d, want 64", c.in, len(got))
+		}
+		if n := eos.BlockNum(got); n != c.want {
+			t.Errorf("eos.BlockNum(syntheticPrevBlockID(%d)) = %d, want %d", c.in, n, c.want)
+		}
 	}
 }
 

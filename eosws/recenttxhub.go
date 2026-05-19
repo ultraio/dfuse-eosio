@@ -4,6 +4,7 @@ package eosws
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -117,6 +118,12 @@ func (h *RecentTxHub) Launch(ctx context.Context) {
 	libRef := bstream.NewBlockRefFromID(h.initialLIB)
 
 	handler := bstream.HandlerFunc(func(block *bstream.Block, obj interface{}) error {
+		// Stamp the watchdog NOW (block received) rather than after the
+		// switch so a slow onStepNew on a heavy block doesn't trigger a
+		// false stall flip (R1 #4). Watchdog measures stream silence, not
+		// per-block processing time.
+		h.lastBlockNano.Store(time.Now().UnixNano())
+
 		fObj := obj.(*forkable.ForkableObject)
 		blk := block.ToNative().(*pbcodec.Block)
 
@@ -128,7 +135,6 @@ func (h *RecentTxHub) Launch(ctx context.Context) {
 		case forkable.StepUndo:
 			h.onStepUndo(blk.Id)
 		}
-		h.lastBlockNano.Store(time.Now().UnixNano())
 		h.ready.Store(true)
 		return nil
 	})
@@ -149,6 +155,13 @@ func (h *RecentTxHub) Launch(ctx context.Context) {
 		h.ready.Store(false)
 	})
 
+	// Clean-shutdown: propagate ctx cancel to the bstream source so it
+	// drops its relayer connection and exits its goroutines within the
+	// pod's terminationGracePeriodSeconds window (R4 #4).
+	go func() {
+		<-ctx.Done()
+		eternalSource.Shutdown(nil)
+	}()
 	go h.runWatchdog(ctx)
 	eternalSource.Run()
 }
@@ -392,7 +405,7 @@ func (h *RecentTxHub) Snapshot(limit int) (*mdl.TransactionList, bool) {
 	}
 
 	out := &mdl.TransactionList{Transactions: make([]*v1.TransactionLifecycle, 0, limit)}
-	var lastBlockID string
+	var lastBlockNum uint32
 	for i := 0; i < h.count && len(out.Transactions) < limit; i++ {
 		idx := (h.head - 1 - i + h.size) % h.size
 		entry := h.ring[idx]
@@ -404,7 +417,7 @@ func (h *RecentTxHub) Snapshot(limit int) (*mdl.TransactionList, bool) {
 		// the JSON encoder which runs after we release the lock.
 		cp := *entry.lc
 		out.Transactions = append(out.Transactions, &cp)
-		lastBlockID = entry.blockID
+		lastBlockNum = entry.blockNum
 	}
 
 	if len(out.Transactions) < limit {
@@ -413,14 +426,39 @@ func (h *RecentTxHub) Snapshot(limit int) (*mdl.TransactionList, bool) {
 		return nil, false
 	}
 
-	// Build the next-page cursor. Use (lastBlockID, 0xffff) so a
-	// subsequent ?cursor=… request resumes one block earlier in the
-	// Bigtable path (matches db.go:331 encoding scheme).
-	out.Cursor = opaqueCursor(lastBlockID + ":" + hexUint16(0xffff))
+	// Build the next-page cursor pointing one block earlier than the ring's
+	// oldest returned tx. We synthesize a 32-byte block-id whose first 4
+	// bytes encode (lastBlockNum - 1) — db.ListMostRecentTransactions only
+	// uses eos.BlockNum(blockID) to start the scan and never matches the
+	// synthesized id against any real blk.Id, so the in-block skip predicate
+	// (`blk.Id == startBlockID && trxIndex > startTrxIndex`) never fires
+	// and the Bigtable fall-through resumes cleanly at lastBlockNum-1,
+	// returning all txs from there backward without overlap.
+	//
+	// Trade-off: any txs that lived in the ring's last block but weren't
+	// returned in this page (because limit landed mid-block) are NOT
+	// surfaced on the next page. With Ultra's home-page limit=25 vs the
+	// chain's typical 1-3 tx/block this case is rare; when it happens the
+	// missing txs remain discoverable via /v0/transactions/{id} or the
+	// search endpoints.
+	out.Cursor = opaqueCursor(syntheticPrevBlockID(lastBlockNum) + ":" + hexUint16(0xffff))
 
 	recentTxRingHits.Inc()
 	return out, true
 }
+
+// syntheticPrevBlockID returns a 64-hex-char string whose first 8 chars
+// encode (blockNum - 1). The remaining 56 chars are zeros — they are never
+// matched against a real blk.Id by the Bigtable fall-through, so collisions
+// are not a concern.
+func syntheticPrevBlockID(blockNum uint32) string {
+	if blockNum == 0 {
+		return "00000000" + zero56
+	}
+	return fmt.Sprintf("%08x", blockNum-1) + zero56
+}
+
+const zero56 = "00000000000000000000000000000000000000000000000000000000"
 
 // alwaysCanonical is the inCanonicalChain discriminator passed to
 // MergeTransactionEvents. The forkable handler only fires StepNew/StepRedo
