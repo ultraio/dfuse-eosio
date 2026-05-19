@@ -196,17 +196,40 @@ func (h *RecentTxHub) runWatchdog(ctx context.Context) {
 // *v1.TransactionLifecycle via the same pipeline the Bigtable path uses,
 // then appends each to the ring under a brief write lock. The conversion
 // runs outside the lock; only the append touches shared state.
+//
+// Both EXPLICIT transactions (`blk.Transactions()` — user-submitted, have a
+// PackedTransaction in their receipt) and IMPLICIT transactions
+// (`blk.ImplicitTransactionOps()` — system-generated like `onblock`, no
+// PackedTransaction) are surfaced, matching the Bigtable read path which
+// walks both `ImplicitTransactionRefs.Hashes` + `TransactionTraceRefs.Hashes`
+// (db.go:277). Without this, low-traffic windows show only sparse explicit
+// txs with non-contiguous block numbers in the eosq home page, whereas
+// Bigtable returns the onblock entries that bridge the gaps.
+//
+// Deferred trxs (separate from implicit) are disabled at Ultra protocol
+// level and are skipped if encountered as a defensive measure.
 func (h *RecentTxHub) onStepNew(blk *pbcodec.Block) {
-	// Index receipts by trx id so we can pair each trace with its receipt
-	// in O(n). Skip receipts without a packed transaction — Ultra has
-	// deferred transactions disabled, so such receipts shouldn't appear;
-	// if they do, the live path can't fully synthesize them and we ignore.
+	// Index explicit receipts by trx id — these have PackedTransaction and
+	// resolve to TransactionEvent_Addition events on the Bigtable path.
 	receiptByID := make(map[string]*pbcodec.TransactionReceipt, len(blk.Transactions()))
 	for _, r := range blk.Transactions() {
 		if r == nil || r.PackedTransaction == nil {
 			continue
 		}
 		receiptByID[r.Id] = r
+	}
+
+	// Index implicit trx ops by trx id — these are system-generated (onblock,
+	// etc.) and resolve to TransactionEvent_InternalAddition events on the
+	// Bigtable path. They appear as traces in blk.TransactionTraces() but
+	// have NO receipt in blk.Transactions() because PackedTransaction is
+	// nil for system trxs.
+	implicitByID := make(map[string]*pbcodec.TrxOp, len(blk.ImplicitTransactionOps()))
+	for _, op := range blk.ImplicitTransactionOps() {
+		if op == nil {
+			continue
+		}
+		implicitByID[op.TransactionId] = op
 	}
 
 	type prepared struct {
@@ -219,54 +242,86 @@ func (h *RecentTxHub) onStepNew(blk *pbcodec.Block) {
 		if trxTrace == nil {
 			continue
 		}
-		receipt, ok := receiptByID[trxTrace.Id]
-		if !ok {
-			// trace without packed receipt → deferred-trx execution. Ignored
-			// per design decision: Ultra disables deferred transactions.
-			continue
-		}
-
-		signedTx, err := codec.ExtractEOSSignedTransactionFromReceipt(receipt)
-		if err != nil {
-			zlog.Warn("recent-tx hub: extract signed tx failed; skipping",
-				zap.String("trx_id", trxTrace.Id),
-				zap.String("block_id", blk.Id),
-				zap.Error(err))
-			continue
-		}
-		deosSignedTx := codec_eosio.SignedTransactionToDEOS(signedTx)
-		pubKeys := codec_eosio.GetPublicKeysFromSignedTransaction(h.chainID, signedTx)
 
 		// Make sure the trace is in the same "reduplicated" shape the
 		// Bigtable read path produces (idempotent if already reduplicated).
 		codec.ReduplicateTransactionTrace(trxTrace)
 
-		events := []*pbcodec.TransactionEvent{
-			{
-				Id:           trxTrace.Id,
-				BlockId:      blk.Id,
-				BlockNum:     blk.Number,
-				Irreversible: false,
-				Event: &pbcodec.TransactionEvent_Addition{
-					Addition: &pbcodec.TransactionEvent_Added{
-						Receipt:     receipt,
-						Transaction: deosSignedTx,
-						PublicKeys:  &pbcodec.PublicKeys{PublicKeys: pubKeys},
+		var events []*pbcodec.TransactionEvent
+
+		if receipt, ok := receiptByID[trxTrace.Id]; ok {
+			// Explicit transaction: synthesize Addition (with PubKeys) + Execution.
+			signedTx, err := codec.ExtractEOSSignedTransactionFromReceipt(receipt)
+			if err != nil {
+				zlog.Warn("recent-tx hub: extract signed tx failed; skipping",
+					zap.String("trx_id", trxTrace.Id),
+					zap.String("block_id", blk.Id),
+					zap.Error(err))
+				continue
+			}
+			deosSignedTx := codec_eosio.SignedTransactionToDEOS(signedTx)
+			pubKeys := codec_eosio.GetPublicKeysFromSignedTransaction(h.chainID, signedTx)
+
+			events = []*pbcodec.TransactionEvent{
+				{
+					Id:           trxTrace.Id,
+					BlockId:      blk.Id,
+					BlockNum:     blk.Number,
+					Irreversible: false,
+					Event: &pbcodec.TransactionEvent_Addition{
+						Addition: &pbcodec.TransactionEvent_Added{
+							Receipt:     receipt,
+							Transaction: deosSignedTx,
+							PublicKeys:  &pbcodec.PublicKeys{PublicKeys: pubKeys},
+						},
 					},
 				},
-			},
-			{
-				Id:           trxTrace.Id,
-				BlockId:      blk.Id,
-				BlockNum:     blk.Number,
-				Irreversible: false,
-				Event: &pbcodec.TransactionEvent_Execution{
-					Execution: &pbcodec.TransactionEvent_Executed{
-						Trace:       trxTrace,
-						BlockHeader: blk.Header,
+				{
+					Id:           trxTrace.Id,
+					BlockId:      blk.Id,
+					BlockNum:     blk.Number,
+					Irreversible: false,
+					Event: &pbcodec.TransactionEvent_Execution{
+						Execution: &pbcodec.TransactionEvent_Executed{
+							Trace:       trxTrace,
+							BlockHeader: blk.Header,
+						},
 					},
 				},
-			},
+			}
+		} else if op, ok := implicitByID[trxTrace.Id]; ok {
+			// Implicit transaction (onblock, etc.): synthesize InternalAddition
+			// + Execution. No PubKeys (system-signed), no Receipt.
+			events = []*pbcodec.TransactionEvent{
+				{
+					Id:           trxTrace.Id,
+					BlockId:      blk.Id,
+					BlockNum:     blk.Number,
+					Irreversible: false,
+					Event: &pbcodec.TransactionEvent_InternalAddition{
+						InternalAddition: &pbcodec.TransactionEvent_AddedInternally{
+							Transaction: op.Transaction,
+						},
+					},
+				},
+				{
+					Id:           trxTrace.Id,
+					BlockId:      blk.Id,
+					BlockNum:     blk.Number,
+					Irreversible: false,
+					Event: &pbcodec.TransactionEvent_Execution{
+						Execution: &pbcodec.TransactionEvent_Executed{
+							Trace:       trxTrace,
+							BlockHeader: blk.Header,
+						},
+					},
+				},
+			}
+		} else {
+			// Neither explicit nor implicit — most likely a deferred-trx
+			// execution whose scheduling was in an older block. Ultra
+			// disables deferred trxs; skip defensively.
+			continue
 		}
 
 		lifecycle := pbcodec.MergeTransactionEvents(events, alwaysCanonical)
