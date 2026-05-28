@@ -847,9 +847,6 @@ github.com/steveyen/gtreap v0.1.0 h1:CjhzTa274PyJLJuMZwIzCO1PfC00oRa8d1Kc78bFXJM
 github.com/steveyen/gtreap v0.1.0/go.mod h1:kl/5J7XbrOmlIbYIXdRHDDE5QxHqpk0cmkT7Z4dM9/Y=
 github.com/streamingfast/blockmeta v0.0.2-0.20210811194956-90dc4202afda h1:hc9+uYzYVqX3A9BJ/qCjlU6GVupUaiVAhPdLl3PdAFk=
 github.com/streamingfast/blockmeta v0.0.2-0.20210811194956-90dc4202afda/go.mod h1:/bONTQE1KOG7MOiXEg7Mm6lxMfJ94xL9bItkWNKJgO4=
-github.com/streamingfast/bstream v0.0.2-0.20210811181043-4c1920a7e3e3/go.mod h1:0Ucl6SRmqAcXa0vYhSAnX8sscejfPhpwuW5Pgz9Ndp4=
-github.com/streamingfast/bstream v0.0.2-0.20210901144836-9a626db444c5 h1:txdYHu+JlMMdhSBOb04CTYvmKtnCVMpzwa0kqS0JbOo=
-github.com/streamingfast/bstream v0.0.2-0.20210901144836-9a626db444c5/go.mod h1:OKY4Lu6Y5+MozsctfGZ9b00/WDfOUNTN3SKNoNjT7mE=
 github.com/streamingfast/cli v0.0.3-0.20210811201236-5c00ec55462d h1:ZEqHQMyAI9PSziBHNUiGdtvnpPnPQlyT8HHW/OLmrgc=
 github.com/streamingfast/cli v0.0.3-0.20210811201236-5c00ec55462d/go.mod h1:8TWHl1oWEu0JNNUz79R7e9dLPeCJhHmAys4g8cl6L/U=
 github.com/streamingfast/client-go v0.0.0-20210812010037-2ae1ded7ca05 h1:1fHSXqxBTiaIkImb6i0OvEN1lI8MxATAMcn4RULTR8s=
@@ -964,6 +961,8 @@ github.com/ugorji/go v1.1.2/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJ
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43/go.mod h1:iT03XoTwV7xq/+UGwKO3UbC1nNNlopQiY61beSdrtOA=
+github.com/ultraio/bstream v0.0.0-20260528112257-31c9b7ce2d8c h1:8kUPwQXp8plzDBW19BBtTlbQM5X5aoh8FLiQI5ekicQ=
+github.com/ultraio/bstream v0.0.0-20260528112257-31c9b7ce2d8c/go.mod h1:OKY4Lu6Y5+MozsctfGZ9b00/WDfOUNTN3SKNoNjT7mE=
 github.com/ultraio/eos-go v0.9.1-0.20240122103729-ce0cb43bd3d0 h1:otkRhv36YWODmq24r22BhvQfVM8Gm3OZIfxLTchS2A4=
 github.com/ultraio/eos-go v0.9.1-0.20240122103729-ce0cb43bd3d0/go.mod h1:BCTBH+XkEi+gO38MHRDm0LLcUhaIlekey+SCBaIAJTk=
 github.com/ultraio/firehose v0.0.0-20240521103135-c3c1a0202f8d h1:fz4bjdjVe1EKvsd66N1YpJAdDG58gkCseSPhE2kG1Ow=

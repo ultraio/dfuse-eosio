@@ -237,3 +237,5 @@ replace (
 
 // replace github.com/eoscanada/eos-go => github.com/EOS-Nation/eos-go v0.10.3-0.20230328111622-b58e29c1532e
 replace github.com/eoscanada/eos-go => github.com/ultraio/eos-go v0.9.1-0.20240122103729-ce0cb43bd3d0
+
+replace github.com/streamingfast/bstream => github.com/ultraio/bstream v0.0.0-20260528112257-31c9b7ce2d8c
