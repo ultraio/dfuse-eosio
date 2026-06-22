@@ -669,3 +669,43 @@ func maybePrintBlock(t *testing.T, block *pbcodec.Block) {
 
 	zlog.Debug("processing test block", zap.Any("block", normalizedOut))
 }
+
+func Test_ABIDecoder_abortBlock(t *testing.T) {
+	t.Run("no active block is a no-op", func(t *testing.T) {
+		decoder := newABIDecoder()
+
+		require.NoError(t, decoder.abortBlock())
+
+		// The decoder must remain usable after a no-op abort.
+		require.NoError(t, decoder.startBlock(1))
+	})
+
+	t.Run("drains queued jobs then a fresh block decodes cleanly", func(t *testing.T) {
+		testABI := readABI(t, "test.1.abi.json")
+		decoder := newABIDecoder()
+
+		// Block 10 starts and queues decoding work, then a fork aborts it before endBlock.
+		aborted := testBlock(t, "0000000aaa", "00000009aa",
+			trxTrace(t, actionTrace(t, "test:test:act1", 0, 1, testABI, `{"from":"test1"}`)),
+		)
+		require.NoError(t, decoder.startBlock(aborted.Num()))
+		for _, trxTrace := range aborted.UnfilteredTransactionTraces {
+			require.NoError(t, decoder.processTransaction(trxTrace))
+		}
+
+		require.NoError(t, decoder.abortBlock())
+
+		// The replacement block must start and fully decode without error or deadlock.
+		// Before the fix, the leftover activeBlockNum would fail startBlock, and any
+		// undrained block-10 jobs would execute against block 11's activeBlockNum and
+		// poison the ordered pool, hanging endBlock forever.
+		replacement := testBlock(t, "0000000baa", "00000009aa",
+			trxTrace(t, actionTrace(t, "test:test:act1", 0, 2, testABI, `{"from":"test2"}`)),
+		)
+		require.NoError(t, decoder.startBlock(replacement.Num()))
+		for _, trxTrace := range replacement.UnfilteredTransactionTraces {
+			require.NoError(t, decoder.processTransaction(trxTrace))
+		}
+		require.NoError(t, decoder.endBlock(replacement))
+	})
+}

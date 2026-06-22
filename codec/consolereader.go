@@ -245,6 +245,13 @@ func (l *ConsoleReader) Read() (out interface{}, err error) {
 
 		case strings.HasPrefix(line, "SWITCH_FORK"):
 			zlog.Info("fork signal, restarting state accumulation from beginning")
+			// A fork can interrupt a block mid-emission (before ACCEPTED_BLOCK). The ABI
+			// decoder accumulates per-block state and in-flight decoding jobs; abort them
+			// here so the next START_BLOCK starts cleanly instead of erroring with
+			// "already processing block" and wedging the mindreader.
+			if err = ctx.abiDecoder.abortBlock(); err != nil {
+				return nil, l.formatError(line, err)
+			}
 			ctx.resetBlock()
 
 		case strings.HasPrefix(line, "ABIDUMP START"):
