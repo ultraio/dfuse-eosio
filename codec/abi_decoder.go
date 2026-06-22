@@ -168,6 +168,35 @@ func (c *ABIDecoder) endBlock(block *pbcodec.Block) error {
 	return nil
 }
 
+// abortBlock discards the block currently being decoded. It is called when a fork
+// (SWITCH_FORK) interrupts a block before its ACCEPTED_BLOCK is emitted. Without it,
+// the decoder stays "armed" on the aborted block and the next startBlock fails with
+// "start block ... while already processing block #N", which terminates the
+// ConsoleReader and wedges the mindreader.
+//
+// Any decoding jobs already queued for the active block are drained (so the ordered
+// pool returns to a clean state and stale jobs never execute against a later block's
+// activeBlockNum), then the active block is cleared so the next startBlock proceeds.
+//
+// lastSeenBlockRef is intentionally left untouched: the aborted block was never
+// completed, so fork detection on the next startBlock must compare against the last
+// *successfully* processed block. The ABI cache is also left as-is; any ABIs the
+// aborted block committed are removed by the truncate-on-next-global-sequence logic
+// when the replacement chain's first transaction arrives (same as a between-block fork).
+func (c *ABIDecoder) abortBlock() error {
+	if c.activeBlockNum == noActiveBlockNum {
+		return nil
+	}
+
+	if err := c.drain(); err != nil {
+		return fmt.Errorf("unable to drain decoding queue on block abort: %w", err)
+	}
+
+	c.activeBlockNum = noActiveBlockNum
+
+	return nil
+}
+
 func (c *ABIDecoder) processTransaction(trxTrace *pbcodec.TransactionTrace) error {
 	zlog.Debug("processing transaction for decoding", zap.String("trx_id", trxTrace.Id))
 

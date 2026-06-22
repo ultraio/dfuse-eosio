@@ -871,3 +871,28 @@ func newParseCtx() *parseCtx {
 		trx:        &pbcodec.TransactionTrace{},
 	}
 }
+
+// TestConsoleReader_ForkMidBlock_DoesNotWedge reproduces the recurring mindreader
+// deadlock (see devops-docs/dfuse/MINDREADER_DEADLOCK_DURABLE_FIX_2026-05-05.md).
+//
+// A fork (SWITCH_FORK) interrupts block 10 before its ACCEPTED_BLOCK, then nodeos
+// re-emits the replacement block. Before the fix, the ABI decoder's active-block
+// state was never reset on SWITCH_FORK (the SWITCH_FORK case only reset the
+// ConsoleReader's block accumulator, not the decoder), so the next START_BLOCK
+// returned "start block for block #11 received while already processing block #10",
+// which terminated the ConsoleReader and wedged the mindreader.
+func TestConsoleReader_ForkMidBlock_DoesNotWedge(t *testing.T) {
+	dmlog := "DMLOG START_BLOCK 10\n" +
+		"DMLOG SWITCH_FORK\n" +
+		"DMLOG START_BLOCK 11\n"
+
+	cr := testReaderConsoleReader(t, bytes.NewBufferString(dmlog), func() {})
+
+	for {
+		_, err := cr.Read()
+		if err == io.EOF {
+			break
+		}
+		require.NoError(t, err)
+	}
+}
