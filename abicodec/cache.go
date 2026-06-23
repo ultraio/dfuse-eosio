@@ -44,7 +44,7 @@ type Cache interface {
 type DefaultCache struct {
 	Abis      map[string][]*ABICacheItem // from account to the ABIs in range
 	Cursor    string                     `json:"cursor"`
-	lock      sync.Mutex
+	lock      sync.RWMutex
 	store     dstore.Store
 	cacheName string
 	dirty     bool
@@ -196,6 +196,15 @@ func (c *DefaultCache) SaveState() error {
 }
 
 func (c *DefaultCache) ABIAtBlockNum(account string, blockNum uint32) *ABICacheItem {
+	// Read-lock the cache: this is the decode hot path and runs concurrently with
+	// setabi writes (SetABIAtBlockNum/RemoveABIAtBlockNum) that mutate the Abis map
+	// and reslice the per-account slice under the write lock. Without this, the
+	// concurrent map read/write panics the (single-replica) abicodec process.
+	// The returned *ABICacheItem is safe to use after RUnlock: items are immutable
+	// once created (writers replace slots or rearrange the slice, never mutate items).
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
 	if abis, ok := c.Abis[account]; ok {
 
 		for i := len(abis) - 1; i >= 0; i-- {
