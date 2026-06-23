@@ -879,8 +879,6 @@ github.com/streamingfast/graphql-go v0.0.0-20210204202750-0e485a040a3c h1:myR0e7
 github.com/streamingfast/graphql-go v0.0.0-20210204202750-0e485a040a3c/go.mod h1:9CQHMSxwO4MprSdzoIEobiHpoLtHm77vfxsvsIN5Vuc=
 github.com/streamingfast/jsonpb v0.0.0-20210811021341-3670f0aa02d0 h1:g8eEYbFSykyzIyuxNMmHEUGGUvJE0ivmqZagLDK42gw=
 github.com/streamingfast/jsonpb v0.0.0-20210811021341-3670f0aa02d0/go.mod h1:cTNObq2Uofb330y05JbbZZ6RwE6QUXw5iVcHk1Fx3fk=
-github.com/streamingfast/kvdb v0.0.2-0.20210811194032-09bf862bd2e3 h1:v1ux5D8Xm30wpFpbS6u6fKuZUx/5/UTzYlR4llYaxSM=
-github.com/streamingfast/kvdb v0.0.2-0.20210811194032-09bf862bd2e3/go.mod h1:4dQjd/1ZHhyfAWaFN8cwtdPGZU5LLmAQ7zK2HE5Ok40=
 github.com/streamingfast/logging v0.0.0-20210811175431-f3b44b61606a h1:Hy7ST3+wGmk4nyBanXKzhRXE63E77UEF93oG51dfq6c=
 github.com/streamingfast/logging v0.0.0-20210811175431-f3b44b61606a/go.mod h1:4GdqELhZOXj4xwc4IaBmzofzdErGynnaSzuzxy0ZIBo=
 github.com/streamingfast/merger v0.0.3-0.20210811195536-1011c89f0a67/go.mod h1:AdPD5JmY9Korm14urrQXWbiyq8ojT4Cc5/orgd7kmIE=
@@ -967,6 +965,8 @@ github.com/ultraio/eos-go v0.9.1-0.20240122103729-ce0cb43bd3d0 h1:otkRhv36YWODmq
 github.com/ultraio/eos-go v0.9.1-0.20240122103729-ce0cb43bd3d0/go.mod h1:BCTBH+XkEi+gO38MHRDm0LLcUhaIlekey+SCBaIAJTk=
 github.com/ultraio/firehose v0.0.0-20240521103135-c3c1a0202f8d h1:fz4bjdjVe1EKvsd66N1YpJAdDG58gkCseSPhE2kG1Ow=
 github.com/ultraio/firehose v0.0.0-20240521103135-c3c1a0202f8d/go.mod h1:fdjssmWmCcWRAEnlfIeUkqn6e4FCETdXn7U8c/hBiyw=
+github.com/ultraio/kvdb v0.0.2-0.20260622235929-e3abc7aa9a5c h1:ZeZYIfDdbpUUw/Sd2iPJR2lMg/KhPCX5Q9BdIXBcEjU=
+github.com/ultraio/kvdb v0.0.2-0.20260622235929-e3abc7aa9a5c/go.mod h1:4dQjd/1ZHhyfAWaFN8cwtdPGZU5LLmAQ7zK2HE5Ok40=
 github.com/unrolled/render v1.0.0 h1:XYtvhA3UkpB7PqkvhUFYmpKD55OudoIeygcfus4vcd4=
 github.com/unrolled/render v1.0.0/go.mod h1:tu82oB5W2ykJRVioYsB+IQKcft7ryBr7w12qMBUPyXg=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
