@@ -181,6 +181,9 @@ func (l *TrxDBLoader) BuildPipelineLive(allowLiveOnEmptyTable bool) error {
 	})
 
 	forkableOptions := []forkable.Option{
+		// Bound the reversible buffer so a LIB stall fails fast (clean restart) instead of
+		// OOMing — see ultraOS-doc dfuse-deep-dive/17 (B1). Tune per pod memory.
+		forkable.WithMaxReversibleBlocks(10_000),
 		forkable.WithLogger(zlog),
 		forkable.WithFilters(forkable.StepNew | forkable.StepIrreversible),
 		forkable.EnsureAllBlocksTriggerLongestChain(),
@@ -216,6 +219,9 @@ func (l *TrxDBLoader) BuildPipelineJob(startBlockNum uint64, numBlocksBeforeStar
 	gate.MaxHoldOff = 1000
 
 	forkableOptions := []forkable.Option{
+		// Bound the reversible buffer so a LIB stall fails fast (clean restart) instead of
+		// OOMing — see ultraOS-doc dfuse-deep-dive/17 (B1). Tune per pod memory.
+		forkable.WithMaxReversibleBlocks(10_000),
 		forkable.WithLogger(zlog),
 		forkable.WithFilters(forkable.StepNew | forkable.StepIrreversible),
 	}

@@ -66,6 +66,9 @@ func init() {
 				DisablePipeline:               viper.GetBool("statedb-disable-pipeline"),
 				DisableShardReconciliation:    viper.GetBool("statedb-disable-shard-reconciliation"),
 				WriteOnEachBlock:              viper.GetBool("statedb-write-on-each-block"),
+				// Bound the reversible buffer so a LIB stall fails fast (clean restart) instead
+				// of OOMing — see ultraOS-doc dfuse-deep-dive/17 (B1). Tune per pod memory.
+				MaxReversibleBlocks: 10_000,
 			}
 
 			ignoreIndexRange := viper.GetString("statedb-ignore-index-range")
