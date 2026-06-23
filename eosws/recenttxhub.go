@@ -139,7 +139,10 @@ func (h *RecentTxHub) Launch(ctx context.Context) {
 		return nil
 	})
 
-	forkableHandler := forkable.New(handler, forkable.WithLogger(zlog), forkable.WithExclusiveLIB(libRef))
+	// Bound the reversible buffer: this hub is long-lived (per-pod) and runs on real
+	// chain LIB, so a LIB stall would grow it unbounded -> OOM. Fail fast instead
+	// (clean restart) — see ultraOS-doc dfuse-deep-dive/17 (B1). Tune per pod memory.
+	forkableHandler := forkable.New(handler, forkable.WithLogger(zlog), forkable.WithExclusiveLIB(libRef), forkable.WithMaxReversibleBlocks(10_000))
 
 	joiningSourceFactory := bstream.SourceFromRefFactory(func(blockRef bstream.BlockRef, sh bstream.Handler) bstream.Source {
 		if blockRef.ID() == "" {
