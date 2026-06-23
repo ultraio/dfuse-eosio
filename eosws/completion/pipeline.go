@@ -64,7 +64,10 @@ func (p *Pipeline) Launch() {
 
 	irrRef := bstream.NewBlockRefFromID(libID)
 	gateHandler := bstream.NewBlockNumGate(uint64(startBlock), bstream.GateExclusive, handler, bstream.GateOptionWithLogger(zlog))
-	forkableHandler := forkable.New(gateHandler, forkable.WithLogger(zlog), forkable.WithExclusiveLIB(irrRef))
+	// Bound the reversible buffer: this pipeline is long-lived (per-pod) and runs on
+	// real chain LIB, so a LIB stall would grow it unbounded -> OOM. Fail fast instead
+	// (clean restart) — see ultraOS-doc dfuse-deep-dive/17 (B1). Tune per pod memory.
+	forkableHandler := forkable.New(gateHandler, forkable.WithLogger(zlog), forkable.WithExclusiveLIB(irrRef), forkable.WithMaxReversibleBlocks(10_000))
 	source := p.subscriptionHub.NewSourceFromBlockRef(irrRef, forkableHandler)
 
 	source.Run()
