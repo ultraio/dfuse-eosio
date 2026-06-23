@@ -53,6 +53,9 @@ func (t *TokenMeta) SetupPipeline(startBlock bstream.BlockRef, blockFilter func(
 	})
 
 	forkOptions := []forkable.Option{
+		// Bound the reversible buffer so a LIB stall fails fast (clean restart) instead of
+		// OOMing — see ultraOS-doc dfuse-deep-dive/17 (B1). Tune per pod memory.
+		forkable.WithMaxReversibleBlocks(10_000),
 		forkable.WithLogger(zlog),
 		forkable.WithFilters(forkable.StepIrreversible),
 	}
