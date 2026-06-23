@@ -241,3 +241,5 @@ replace github.com/eoscanada/eos-go => github.com/ultraio/eos-go v0.9.1-0.202401
 replace github.com/streamingfast/bstream => github.com/ultraio/bstream v0.0.0-20260528112257-31c9b7ce2d8c
 
 replace github.com/streamingfast/kvdb => github.com/ultraio/kvdb v0.0.2-0.20260622235929-e3abc7aa9a5c
+
+replace github.com/streamingfast/fluxdb => github.com/ultraio/fluxdb v0.0.0-20260623000039-dc09c1e130f2
