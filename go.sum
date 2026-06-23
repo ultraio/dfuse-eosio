@@ -957,8 +957,8 @@ github.com/ugorji/go v1.1.2/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJ
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43/go.mod h1:iT03XoTwV7xq/+UGwKO3UbC1nNNlopQiY61beSdrtOA=
-github.com/ultraio/bstream v0.0.0-20260623020841-8575ea641342 h1:wqaPks28lO2V612efiU9ZPmADZXn68uiGp1FJ/FNHsA=
-github.com/ultraio/bstream v0.0.0-20260623020841-8575ea641342/go.mod h1:OKY4Lu6Y5+MozsctfGZ9b00/WDfOUNTN3SKNoNjT7mE=
+github.com/ultraio/bstream v0.0.0-20260623022923-2cf8f19d1d95 h1:yCtOFSGzSwVnjkQGKakAXVxQFYzPBbazPUhGJ4/O+Ik=
+github.com/ultraio/bstream v0.0.0-20260623022923-2cf8f19d1d95/go.mod h1:OKY4Lu6Y5+MozsctfGZ9b00/WDfOUNTN3SKNoNjT7mE=
 github.com/ultraio/eos-go v0.9.1-0.20240122103729-ce0cb43bd3d0 h1:otkRhv36YWODmq24r22BhvQfVM8Gm3OZIfxLTchS2A4=
 github.com/ultraio/eos-go v0.9.1-0.20240122103729-ce0cb43bd3d0/go.mod h1:BCTBH+XkEi+gO38MHRDm0LLcUhaIlekey+SCBaIAJTk=
 github.com/ultraio/firehose v0.0.0-20240521103135-c3c1a0202f8d h1:fz4bjdjVe1EKvsd66N1YpJAdDG58gkCseSPhE2kG1Ow=
