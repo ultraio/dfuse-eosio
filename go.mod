@@ -243,3 +243,5 @@ replace github.com/streamingfast/bstream => github.com/ultraio/bstream v0.0.0-20
 replace github.com/streamingfast/kvdb => github.com/ultraio/kvdb v0.0.2-0.20260622235929-e3abc7aa9a5c
 
 replace github.com/streamingfast/fluxdb => github.com/ultraio/fluxdb v0.0.0-20260623021520-7b072632e84f
+
+replace github.com/streamingfast/search => github.com/ultraio/search v0.0.2-0.20260820093803-6c976c99050f

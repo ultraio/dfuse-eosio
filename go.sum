@@ -967,6 +967,8 @@ github.com/ultraio/fluxdb v0.0.0-20260623021520-7b072632e84f h1:cscvELv6g1XxusFN
 github.com/ultraio/fluxdb v0.0.0-20260623021520-7b072632e84f/go.mod h1:UTynahX0wiM+tB9baOr+LU8gwCjn5zEFOJ4PfZFUnXk=
 github.com/ultraio/kvdb v0.0.2-0.20260622235929-e3abc7aa9a5c h1:ZeZYIfDdbpUUw/Sd2iPJR2lMg/KhPCX5Q9BdIXBcEjU=
 github.com/ultraio/kvdb v0.0.2-0.20260622235929-e3abc7aa9a5c/go.mod h1:4dQjd/1ZHhyfAWaFN8cwtdPGZU5LLmAQ7zK2HE5Ok40=
+github.com/ultraio/search v0.0.2-0.20260820093803-6c976c99050f h1:llWavviJX5XwHWd/TulR02aFXXBKJfYeDI0LBwCUSfA=
+github.com/ultraio/search v0.0.2-0.20260820093803-6c976c99050f/go.mod h1:a1f4zBjFCEfFHjsqr9Qy9mEam51UveTvwSI2hasHOLc=
 github.com/unrolled/render v1.0.0 h1:XYtvhA3UkpB7PqkvhUFYmpKD55OudoIeygcfus4vcd4=
 github.com/unrolled/render v1.0.0/go.mod h1:tu82oB5W2ykJRVioYsB+IQKcft7ryBr7w12qMBUPyXg=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
