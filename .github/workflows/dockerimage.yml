@@ -138,7 +138,7 @@ jobs:
           if [ -n "${DFUSE_NODEOS_TAG:-}" ]; then
             if out=$(docker manifest inspect ${{ env.DOCKER_IMAGE }}:${DFUSE_NODEOS_TAG} 2>&1); then
               echo "${DFUSE_NODEOS_TAG} already exists; distro-qualified tags are immutable" >&2; exit 1
-            elif ! grep -qiE 'manifest unknown|not found' <<<"$out"; then
+            elif ! grep -qiE 'manifest unknown|no such manifest|not found' <<<"$out"; then
               echo "Could not confirm that ${DFUSE_NODEOS_TAG} is absent: $out" >&2; exit 1
             fi
           fi
