@@ -24,6 +24,8 @@ on:
         type: choice
         options:
           - '22.04'
+          - '24.04'
+          - '26.04'
 
 env:
   DOCKER_IMAGE: europe-west1-docker.pkg.dev/ultra-registry/docker/dfuse-eosio
@@ -42,12 +44,21 @@ jobs:
         run: |
           echo "DFUSE_TAG=${{ github.event.inputs.dfuse-eosio }}" >> $GITHUB_ENV
           echo "UBUNTU_VERSION=${{ github.event.inputs.ubuntu-version }}" >> $GITHUB_ENV
+          # 22.04 keeps the historical unsuffixed tags; newer distros get distro-qualified tags
+          # (<dfuse-tag>-ubuntuNN, <dfuse-tag>-nodeos<eosio>-ubuntuNN) and never touch `latest`.
+          if [ "${{ github.event.inputs.ubuntu-version }}" = "22.04" ]; then
+            echo "DISTRO_SUFFIX=" >> $GITHUB_ENV
+          else
+            echo "DISTRO_SUFFIX=-ubuntu$(echo '${{ github.event.inputs.ubuntu-version }}' | cut -d. -f1)" >> $GITHUB_ENV
+          fi
 
       - name: Set Nodeos Version
         if: ${{ github.event.inputs.eosio != 'null' }}
         run: |
           echo "EOSIO_TAG=${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
-          echo "DFUSE_NODEOS_TAG=${{ github.event.inputs.dfuse-eosio }}-nodeos${{ github.event.inputs.eosio }}" >> $GITHUB_ENV
+          echo "DFUSE_NODEOS_TAG=${{ github.event.inputs.dfuse-eosio }}-nodeos${{ github.event.inputs.eosio }}${DISTRO_SUFFIX}" >> $GITHUB_ENV
+          # eosio releases are distro-qualified from 6.2.2-3.0.1 (eosio-<v>-ubuntuNN.deb); 22.04 keeps the unsuffixed name
+          echo "EOSIO_DEB=eosio-${{ github.event.inputs.eosio }}${DISTRO_SUFFIX}.deb" >> $GITHUB_ENV
 
       # checkout based on dfuse tag
       - name: Checkout dfuse-eosio
@@ -60,6 +71,21 @@ jobs:
         run: |
           echo "RELEASE_COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
+      # Newer distros build the tag's code with this workflow ref's build files (older tags only know 22.04).
+      - name: Checkout build files for newer distros
+        if: ${{ env.DISTRO_SUFFIX != '' }}
+        uses: actions/checkout@v3
+        with:
+          ref: "${{ github.sha }}"
+          path: build-files
+
+      - name: Use this ref's build files for newer distros
+        if: ${{ env.DISTRO_SUFFIX != '' }}
+        run: |
+          cp build-files/dfuse.Dockerfile build-files/nodeos.Dockerfile .
+          cp build-files/.github/install_deps.sh .github/install_deps.sh
+          rm -rf build-files
+
       # Only download eosio if set
       - name: Download EOSIO Debian package
         if: ${{ github.event.inputs.eosio != 'null' }}
@@ -68,7 +94,7 @@ jobs:
           repository: ultraio/eosio
           tag: '${{ github.event.inputs.eosio }}'
           path: .
-          file:  eosio-${{ env.EOSIO_TAG }}.deb
+          file:  ${{ env.EOSIO_DEB }}
           token: '${{ secrets.DEVOPS_SECRET }}'
 
       # gcloud authorization
@@ -102,33 +128,52 @@ jobs:
 #        run: |
 #          gcloud auth configure-docker europe-west1-docker.pkg.dev -q
 
+      # Newer distros never overwrite: refuse a distro-qualified nodeos tag that already exists.
+      - name: Refuse an existing distro-qualified image
+        if: ${{ env.DISTRO_SUFFIX != '' }}
+        run: |
+          if [ "${{ github.event.inputs.overwrite-dfuse }}" = "true" ]; then
+            echo "overwrite-dfuse is only supported for 22.04 builds" >&2; exit 1
+          fi
+          if [ -n "${DFUSE_NODEOS_TAG:-}" ]; then
+            if out=$(docker manifest inspect ${{ env.DOCKER_IMAGE }}:${DFUSE_NODEOS_TAG} 2>&1); then
+              echo "${DFUSE_NODEOS_TAG} already exists; distro-qualified tags are immutable" >&2; exit 1
+            elif ! grep -qiE 'manifest unknown|not found' <<<"$out"; then
+              echo "Could not confirm that ${DFUSE_NODEOS_TAG} is absent: $out" >&2; exit 1
+            fi
+          fi
+
       # Check if dfuse image is existed. Failed if not existed
       - name: Check Dfuse Image
         id: dfuse-check
         continue-on-error: true
         run: |
-          docker manifest inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
+          docker manifest inspect ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}${{ env.DISTRO_SUFFIX }}
 
-      # Only build dfuse image if not existed or overwrite is set
+      # Only build dfuse image if not existed or overwrite is set (22.04 only pushes `latest`)
       - name: Build Dfuse Image Without Nodeos
         if: ${{  (steps.dfuse-check.outcome == 'failure' || github.event.inputs.overwrite-dfuse == 'true') }}
         run: |
-          docker build -f dfuse.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
-                -t ${{ env.DOCKER_IMAGE }}:latest \
+          docker build -f dfuse.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}${{ env.DISTRO_SUFFIX }} \
                 --build-arg VERSION=${{ env.DFUSE_TAG }} \
                 --build-arg COMMIT=${{ env.RELEASE_COMMIT }} \
                 --build-arg UBUNTU_VERSION=${{ env.UBUNTU_VERSION }}
-          docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}
-          docker push ${{ env.DOCKER_IMAGE }}:latest
+          docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}${{ env.DISTRO_SUFFIX }}
+          if [ -z "${{ env.DISTRO_SUFFIX }}" ]; then
+            docker tag ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} ${{ env.DOCKER_IMAGE }}:latest
+            docker push ${{ env.DOCKER_IMAGE }}:latest
+          fi
       
       # Only build dfuse with nodeos if eosio is set and dfuse image are exist
       - name: Build Dfuse Image With Nodeos
         if: ${{ github.event.inputs.eosio != 'null' }}
         run: |
           docker build -f nodeos.Dockerfile . -t ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }} \
-                -t ${{ env.DOCKER_IMAGE }}:latest \
-                --build-arg DFUSE_IMAGE=${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }} \
-                --build-arg DEB_PKG=eosio-${{ env.EOSIO_TAG }}.deb
+                --build-arg DFUSE_IMAGE=${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_TAG }}${{ env.DISTRO_SUFFIX }} \
+                --build-arg DEB_PKG=${{ env.EOSIO_DEB }}
           docker push ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }}
-          docker push ${{ env.DOCKER_IMAGE }}:latest
+          if [ -z "${{ env.DISTRO_SUFFIX }}" ]; then
+            docker tag ${{ env.DOCKER_IMAGE }}:${{ env.DFUSE_NODEOS_TAG }} ${{ env.DOCKER_IMAGE }}:latest
+            docker push ${{ env.DOCKER_IMAGE }}:latest
+          fi
           
