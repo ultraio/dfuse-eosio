@@ -164,9 +164,10 @@ type parseCtx struct {
 	minorVersion uint64
 	hydrator     eosio.Hydrator
 
-	abiDecoder     *ABIDecoder
-	block          *pbcodec.Block
-	activeBlockNum int64
+	abiDecoder          *ABIDecoder
+	block               *pbcodec.Block
+	activeBlockNum      int64
+	bootstrapOpsPending bool
 
 	trx         *pbcodec.TransactionTrace
 	creationOps []*creationOp
@@ -273,6 +274,9 @@ func (l *ConsoleReader) Read() (out interface{}, err error) {
 			err = ctx.readFeatureOpPreActivate(line)
 
 		case strings.HasPrefix(line, "SWITCH_FORK"):
+			if ctx.bootstrapOpsPending {
+				return nil, l.formatError(line, fmt.Errorf("cannot discard pending genesis bootstrap operations"))
+			}
 			zlog.Info("fork signal, restarting state accumulation from beginning")
 			// A fork can interrupt a block mid-emission (before ACCEPTED_BLOCK). The ABI
 			// decoder accumulates per-block state and in-flight decoding jobs; abort them
@@ -502,11 +506,19 @@ func (ctx *parseCtx) readStartBlock(line string) error {
 	// SWITCH_FORK marker. Discard only that unaccepted attempt; unexpected
 	// height changes must still fail the decoder's active-block guard.
 	if ctx.abiDecoder.activeBlockNum == uint64(blockNum) {
+		if ctx.bootstrapOpsPending {
+			return fmt.Errorf("cannot discard pending genesis bootstrap operations")
+		}
 		if err := ctx.abiDecoder.abortBlock(); err != nil {
 			return fmt.Errorf("abi decoder abort interrupted block: %w", err)
 		}
 	}
 
+	// Genesis operations precede the first START_BLOCK and are not emitted
+	// again on retry. Snapshot/existing-state startup has no such prefix.
+	if ctx.activeBlockNum == 0 {
+		ctx.bootstrapOpsPending = len(ctx.trx.PermOps)+len(ctx.trx.RamOps)+len(ctx.trx.RlimitOps) != 0
+	}
 	ctx.resetBlock()
 	ctx.activeBlockNum = blockNum
 
@@ -553,6 +565,7 @@ func (ctx *parseCtx) readAcceptedBlock(line string) (*pbcodec.Block, error) {
 	}
 
 	zlog.Debug("abi decoder terminated all decoding operations, resetting block")
+	ctx.bootstrapOpsPending = false
 	ctx.resetBlock()
 	return block, nil
 }
@@ -616,6 +629,7 @@ func (ctx *parseCtx) readAcceptedBlockV2(line string) (*pbcodec.Block, error) {
 	}
 
 	zlog.Debug("abi decoder terminated all decoding operations, resetting block")
+	ctx.bootstrapOpsPending = false
 	ctx.resetBlock()
 	return block, nil
 }
