@@ -56,6 +56,24 @@ func TestConsoleReader_InterruptedRetryPreservesAcceptedOutput(t *testing.T) {
 	}
 }
 
+func TestConsoleReader_GenesisRetryFailsClosed(t *testing.T) {
+	input, err := os.ReadFile("testdata/deep-mind.dmlog")
+	require.NoError(t, err)
+	start := bytes.Index(input, []byte("DMLOG START_BLOCK "))
+	accepted := start + bytes.Index(input[start:], []byte("DMLOG ACCEPTED_BLOCK "))
+	require.Greater(t, accepted, start)
+	for _, marker := range []string{"", "DMLOG SWITCH_FORK\n"} {
+		retry := append(append(append([]byte{}, input[:accepted]...), []byte(marker)...), input[start:]...)
+		reader := testReaderConsoleReader(t, bytes.NewReader(retry), func() {})
+		block, err := reader.Read()
+		require.Nil(t, block)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot discard pending genesis bootstrap operations")
+		_, err = reader.Read()
+		require.Equal(t, io.EOF, err)
+	}
+}
+
 func TestConsoleReader_UnexpectedActiveHeightStillFails(t *testing.T) {
 	reader := testReaderConsoleReader(t, strings.NewReader("DMLOG START_BLOCK 10\nDMLOG START_BLOCK 11\n"), func() {})
 	_, err := reader.Read()
