@@ -23,6 +23,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/dfuse-io/dfuse-eosio/codec/eosio"
 	eosio_v2_0 "github.com/dfuse-io/dfuse-eosio/codec/eosio/v2.0"
@@ -68,6 +69,8 @@ type ConsoleReader struct {
 	close      func()
 	readBuffer chan string
 	done       chan interface{}
+	stopped    chan struct{}
+	closeOnce  sync.Once
 
 	ctx *parseCtx
 }
@@ -88,7 +91,8 @@ func NewConsoleReader(reader io.Reader, opts ...ConsoleReaderOption) (*ConsoleRe
 			block:      &pbcodec.Block{},
 			trx:        &pbcodec.TransactionTrace{},
 		},
-		done: make(chan interface{}),
+		done:    make(chan interface{}),
+		stopped: make(chan struct{}),
 	}
 
 	for _, opt := range opts {
@@ -117,12 +121,18 @@ func (l *ConsoleReader) setupScanner() {
 	l.readBuffer = make(chan string, 2000)
 
 	go func() {
+		defer close(l.readBuffer)
+		defer close(l.done)
 		for l.scanner.Scan() {
 			line := l.scanner.Text()
 			if !strings.HasPrefix(line, "DMLOG ") {
 				continue
 			}
-			l.readBuffer <- line
+			select {
+			case l.readBuffer <- line:
+			case <-l.stopped:
+				return
+			}
 		}
 
 		err := l.scanner.Err()
@@ -130,8 +140,6 @@ func (l *ConsoleReader) setupScanner() {
 			zlog.Error("console read line scanner encountered an error", zap.Error(err))
 		}
 
-		close(l.readBuffer)
-		close(l.done)
 	}()
 }
 
@@ -140,7 +148,15 @@ func (l *ConsoleReader) Done() <-chan interface{} {
 }
 
 func (l *ConsoleReader) Close() {
-	l.close()
+	l.closeOnce.Do(func() {
+		close(l.stopped)
+		// A failed parser must release the supervised process's log pipe, even
+		// when the scanner is blocked on input or on its full output buffer.
+		if source, ok := l.src.(io.Closer); ok {
+			_ = source.Close()
+		}
+		l.close()
+	})
 }
 
 type parseCtx struct {
@@ -159,6 +175,19 @@ type parseCtx struct {
 }
 
 func (l *ConsoleReader) Read() (out interface{}, err error) {
+	defer func() {
+		if err != nil {
+			l.Close()
+		}
+	}()
+	select {
+	case <-l.stopped:
+		// Intentional cancellation is terminal. Mindreader closes its block
+		// stream on EOF; repeating the scanner's closed-pipe error would wedge
+		// the consumer during shutdown.
+		return nil, io.EOF
+	default:
+	}
 	ctx := l.ctx
 
 	for line := range l.readBuffer {
@@ -467,6 +496,15 @@ func (ctx *parseCtx) readStartBlock(line string) error {
 	blockNum, err := strconv.ParseInt(chunks[1], 10, 64)
 	if err != nil {
 		return fmt.Errorf("block_num not a valid string, got: %q", chunks[1])
+	}
+
+	// Nodeos can retry an interrupted onblock at the same height without a
+	// SWITCH_FORK marker. Discard only that unaccepted attempt; unexpected
+	// height changes must still fail the decoder's active-block guard.
+	if ctx.abiDecoder.activeBlockNum == uint64(blockNum) {
+		if err := ctx.abiDecoder.abortBlock(); err != nil {
+			return fmt.Errorf("abi decoder abort interrupted block: %w", err)
+		}
 	}
 
 	ctx.resetBlock()

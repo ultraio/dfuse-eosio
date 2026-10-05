@@ -169,7 +169,7 @@ func (c *ABIDecoder) endBlock(block *pbcodec.Block) error {
 }
 
 // abortBlock discards the block currently being decoded. It is called when a fork
-// (SWITCH_FORK) interrupts a block before its ACCEPTED_BLOCK is emitted. Without it,
+// (SWITCH_FORK) or same-height retry interrupts a block before ACCEPTED_BLOCK. Without it,
 // the decoder stays "armed" on the aborted block and the next startBlock fails with
 // "start block ... while already processing block #N", which terminates the
 // ConsoleReader and wedges the mindreader.
@@ -193,6 +193,10 @@ func (c *ABIDecoder) abortBlock() error {
 	}
 
 	c.activeBlockNum = noActiveBlockNum
+	// An aborted attempt may have committed setabi operations to the cache.
+	// The replacement can follow lastSeenBlockRef sequentially, so startBlock's
+	// between-block fork check alone cannot detect these unaccepted ABIs.
+	c.truncateOnNextGlobalSequence = true
 
 	return nil
 }
